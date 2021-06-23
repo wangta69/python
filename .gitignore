@@ -1,6 +1,5 @@
 /kiwoom/logs/log
 /kiwoom/venv
-/kiwoom//kiwoom/__pycache__
+*__pycache__
 # IDEs and editors
-/.idea
-/kiwoom/.idea
+*.idea
