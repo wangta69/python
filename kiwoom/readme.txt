@@ -12,3 +12,6 @@ platformcheck.py 실행후 보인의 환경을 체크한다.
 
 conda 환경에서의 인스톨
 콘다설치경로/Scripts/conda install 패키지명
+
+파이썬을 이용한 자동 주식투자 시스템 개발
+http://blog.quantylab.com/systrading.html

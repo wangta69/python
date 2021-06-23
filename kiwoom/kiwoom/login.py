@@ -2,7 +2,7 @@ from PyQt5.QAxContainer import *
 from PyQt5.QtCore import *
 from kiwoom.config.errCode import *
 
-class Kiwoom(QAxWidget):
+class Klogin(QAxWidget):
     def __init__(self):
         super().__init__()
         print("키움 클래스입니다.")
