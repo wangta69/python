@@ -1,6 +1,8 @@
 /kiwoom/logs/log
 /kiwoom/venv
+/dart/fsdata
+/dart/conf.ini
+/dart/venv
 *__pycache__
 # IDEs and editors
 *.idea
-kiwoom/conf.ini
