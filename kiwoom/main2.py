@@ -1,5 +1,6 @@
 import sys
-from kiwoom.login import *
+# from kiwoom.login import *
+from main2body import *
 # from kiwoom.reqestThread import *
 from PyQt5.QtWidgets import *
 from PyQt5.QAxContainer import QAxWidget
@@ -21,7 +22,7 @@ class Main():
         # self.request_thread.start()
 
         self.app = QApplication(sys.argv) # QApplication 객체 생성.
-        self.login = Klogin()
+        self.kapp = Kiwoom()
         self.app.exec_() # 이벤트 루프 실행.
 
 if __name__ == "__main__":

@@ -20,3 +20,11 @@ http://blog.quantylab.com/systrading.html
 // dart 관련
 https://pypi.org/project/dart-fss/
 https://opendart.fss.or.kr/guide/main.do?apiGrpCd=DS001
+
+
+// 관련 참조 교제 https://github.com/programgarden/book
+
+# Qt Designer 설치
+(base) C:\Users\myuser>designer
+사용법 : https://generalbulldog.tistory.com/30
+
