@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QStatusBar
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
 from work.kiwoom.kiwoom import Kiwoom
+from work.stockInfo.foreigner import Foreigner
 from subwindow import SubWindow
 from help.platformInfo import PlatformInfoWindow
 
@@ -10,6 +11,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.kiwoom = Kiwoom(MainWindow)
+        self.foreigner = Foreigner(MainWindow)
 
         self.initUI()
 
@@ -25,6 +27,8 @@ class MainWindow(QMainWindow):
 
         openAction = QAction(QIcon('exit.png'), 'newWindow', self)
         openAction.triggered.connect(self.onButtonClicked)
+        
+
 
         # Help
         helpPlatformAction = QAction(QIcon('exit.png'), 'platform', self)
@@ -32,7 +36,8 @@ class MainWindow(QMainWindow):
 
         # Kiwoom > menu
         loginAction = QAction(QIcon('exit.png'), '접속 하기', self)
-        loginAction.triggered.connect(self.kiwoom.login)
+        loginAction.triggered.connect(self.kiwoom.connect)
+        # loginAction.triggered.connect(self.kiwoom.login)
 
         loginStatusAction = QAction(QIcon('exit.png'), '접속 상태', self)
         loginStatusAction.triggered.connect(self.kiwoom.login_connect_state)
@@ -49,8 +54,12 @@ class MainWindow(QMainWindow):
         unContractedInfoAction = QAction(QIcon('exit.png'), '미체결 내역 조회', self)
         unContractedInfoAction.triggered.connect(self.kiwoom.uncontract_info)
 
-        # Kiwoom > menu Add
+        # 자료
+        foreignerPlatformAction = QAction(QIcon('exit.png'), 'platform', self)
+        foreignerPlatformAction.triggered.connect(self.foreigner.info)
+
         menubar = self.menuBar()
+        # Kiwoom > menu Add
         menuKiwoom = menubar.addMenu('&kiwoom')
         menuKiwoom.addAction(loginAction)
         menuKiwoom.addAction(loginStatusAction)
@@ -58,6 +67,10 @@ class MainWindow(QMainWindow):
         menuKiwoom.addAction(depositInfoAction)
         menuKiwoom.addAction(accountBalanceInfoAction)
         menuKiwoom.addAction(unContractedInfoAction)
+
+        # StockInfo
+        menuInform = menubar.addMenu('&StockInfo')
+        menuInform.addAction(foreignerPlatformAction)
 
         # File
         # menubar.setNativeMenuBar(False)
@@ -72,6 +85,8 @@ class MainWindow(QMainWindow):
         MainWindow.statusBar = QStatusBar(self)
         self.setStatusBar(MainWindow.statusBar)
         self.statusBar.showMessage('Not connected')
+
+
 
     # Help > Platform
     def helpPlatformClicked(self):

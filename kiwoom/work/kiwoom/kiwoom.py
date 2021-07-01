@@ -46,14 +46,14 @@ class Kiwoom(QAxWidget):
         self.screen_calculation_stock = "2000"
 
         # 초기 작업
-        self.create_kiwoom_instance()
-        self.event_collection()  # 이벤트와 슬롯을 메모리에 먼저 생성.
-        self.login()
-        self.get_account_info()  # 계좌 번호만 얻어오기
-        self.get_deposit_info()  # 예수금 관련된 정보 얻어오기
-        self.get_account_evaluation_balance()  # 계좌평가잔고내역 얻어오기
-        self.not_signed_account()  # 미체결내역 얻어오기
-        self.calculator()
+        # self.create_kiwoom_instance()
+        # self.event_collection()  # 이벤트와 슬롯을 메모리에 먼저 생성.
+        # # self.login()
+        # self.get_account_info()  # 계좌 번호만 얻어오기
+        # self.get_deposit_info()  # 예수금 관련된 정보 얻어오기
+        # self.get_account_evaluation_balance()  # 계좌평가잔고내역 얻어오기
+        # self.not_signed_account()  # 미체결내역 얻어오기
+        # self.calculator()
       #  self.menu()
 
     # COM 오브젝트 생성.
@@ -105,9 +105,26 @@ class Kiwoom(QAxWidget):
             self.account_event_loop.exec_()
 
     # -------------------------------------
+    # connect
+    # -------------------------------------
+    def connect(self):
+        self.create_kiwoom_instance()
+        self.event_collection()  # 이벤트와 슬롯을 메모리에 먼저 생성.
+        self.login()
+        self.get_account_info()  # 계좌 번호만 얻어오기
+        self.get_deposit_info()  # 예수금 관련된 정보 얻어오기
+        self.get_account_evaluation_balance()  # 계좌평가잔고내역 얻어오기
+        self.not_signed_account()  # 미체결내역 얻어오기
+        self.calculator()
+    # -------------------------------------
     # 로그인 관련
     # -------------------------------------
     def login(self):
+
+
+
+
+
         self.dynamicCall("CommConnect()")  # 시그널 함수 호출.
         self.login_event_loop.exec_()
 
