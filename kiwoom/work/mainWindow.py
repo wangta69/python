@@ -3,8 +3,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
 from work.kiwoom.kiwoom import Kiwoom
 from work.stockInfo.foreigner import Foreigner
-from subwindow import SubWindow
+from work.stockInfo.financialStatement import FinancialStatements
+
 from help.platformInfo import PlatformInfoWindow
+from subwindow import SubWindow
 
 class MainWindow(QMainWindow):
 
@@ -12,6 +14,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.kiwoom = Kiwoom(MainWindow)
         self.foreigner = Foreigner(MainWindow)
+        self.financialStatement = FinancialStatements(MainWindow)
 
         self.initUI()
 
@@ -55,8 +58,12 @@ class MainWindow(QMainWindow):
         unContractedInfoAction.triggered.connect(self.kiwoom.uncontract_info)
 
         # 자료
-        foreignerPlatformAction = QAction(QIcon('exit.png'), 'platform', self)
+        foreignerPlatformAction = QAction(QIcon('exit.png'), '외군인 한도 소진율 ', self)
         foreignerPlatformAction.triggered.connect(self.foreigner.info)
+
+        financialStaPlatformAction = QAction(QIcon('exit.png'), '제무제표', self)
+        # financialStaPlatformAction.triggered.connect(self.financialStatement.info)
+        financialStaPlatformAction.triggered.connect(self.financialThread)
 
         menubar = self.menuBar()
         # Kiwoom > menu Add
@@ -71,6 +78,7 @@ class MainWindow(QMainWindow):
         # StockInfo
         menuInform = menubar.addMenu('&StockInfo')
         menuInform.addAction(foreignerPlatformAction)
+        menuInform.addAction(financialStaPlatformAction)
 
         # File
         # menubar.setNativeMenuBar(False)
@@ -87,6 +95,9 @@ class MainWindow(QMainWindow):
         self.statusBar.showMessage('Not connected')
 
 
+    def financialThread(self):
+        self.financialStatement.start()
+        # self.financialStatement.expecting
 
     # Help > Platform
     def helpPlatformClicked(self):
