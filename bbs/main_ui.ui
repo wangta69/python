@@ -61,6 +61,11 @@
       <string>created_at</string>
      </property>
     </column>
+    <column>
+     <property name="text">
+      <string/>
+     </property>
+    </column>
    </widget>
    <widget class="QLineEdit" name="input_name">
     <property name="geometry">

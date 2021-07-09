@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menutype">
+    <property name="title">
+     <string>kiwoom</string>
+    </property>
+    <addaction name="action"/>
+    <addaction name="separator"/>
+    <addaction name="action_3"/>
+    <addaction name="action_4"/>
+    <addaction name="action_5"/>
+    <addaction name="action_6"/>
+    <addaction name="action_7"/>
+   </widget>
+   <widget class="QMenu" name="menuStockInfo">
+    <property name="title">
+     <string>StockInfo</string>
+    </property>
+    <addaction name="action_8"/>
+    <addaction name="action_9"/>
+   </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionExit"/>
+    <addaction name="actionnewWindow"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionPlatform"/>
+   </widget>
+   <addaction name="menutype"/>
+   <addaction name="menuStockInfo"/>
+   <addaction name="menuFile"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action">
+   <property name="text">
+    <string>접속하기</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>접속상태</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>정보보기</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>예수금조회</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>계좌잔고조회</string>
+   </property>
+  </action>
+  <action name="action_7">
+   <property name="text">
+    <string>미체결내역조회</string>
+   </property>
+  </action>
+  <action name="action_8">
+   <property name="text">
+    <string>외국인 한도 소진율</string>
+   </property>
+  </action>
+  <action name="action_9">
+   <property name="text">
+    <string>제무제표</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionnewWindow">
+   <property name="text">
+    <string>newWindow</string>
+   </property>
+  </action>
+  <action name="actionPlatform">
+   <property name="text">
+    <string>Platform</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

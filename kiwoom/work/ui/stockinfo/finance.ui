@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Finance</class>
+ <widget class="QWidget" name="Finance">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>502</width>
+    <height>449</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QPushButton" name="LoadDataAction">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>조회</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="CrawlingDataction">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>20</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>크롤링</string>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="tableWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>471</width>
+     <height>341</height>
+    </rect>
+   </property>
+   <column>
+    <property name="text">
+     <string>code</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>회사명</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Q1</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Q2</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>증가율</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>흑전</string>
+    </property>
+   </column>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
