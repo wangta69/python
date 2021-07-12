@@ -21,7 +21,6 @@ class FinancialStatements(QWidget, form_class):
         count = 0;
         for row in rows:
             # print(row[0], row[1], row[2], row[3])
-            print(row)
             self.tableWidget.setItem(count, 0, QTableWidgetItem(str(row[0])))
             self.tableWidget.setItem(count, 1, QTableWidgetItem(row[1]))
             self.tableWidget.setItem(count, 2, QTableWidgetItem(row[2]))
@@ -76,8 +75,6 @@ class FinancialStatements(QWidget, form_class):
         # create dataframe object recordset
         for row in range(self.tableWidget.rowCount()):
             for col in range(self.tableWidget.columnCount()):
-                print(row, col, columnHeaders[col])
-                print(self.tableWidget.item(row, col).text())
                 df.at[row, columnHeaders[col]] = self.tableWidget.item(row, col).text()
 
         df.to_excel('financialStatement.xlsx', index=False)

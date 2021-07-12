@@ -57,5 +57,60 @@ class Mysql:
         rows = cur.fetchall()
         return rows
 
+    def updateCorporations(self, market, code, comp_name, industry, products, listed_at, sett_month, ceo, url, region):
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = "select id, code from corporations where code=%s limit 0, 1"
+                curs.execute(sql, (code))
+                # columns = curs.description
+                # print(columns)
+
+                # rs = curs.fetchall()
+                rs = curs.fetchone()
+                print(rs)
+
+                if rs == None:  # 값이 없을 경우 현재 값 입력
+                    print('None')
+                    sql = 'insert into corporations ' \
+                          '(market, code, comp_name, industry, products, listed_at, sett_month, ceo, url, region, created_at, updated_at) ' \
+                          'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+                    curs.execute(sql, (
+                    market, str(code), comp_name, industry, products, listed_at, sett_month, ceo, url, region,
+                    time.strftime('%Y-%m-%d %H:%M:%S'),
+                    time.strftime('%Y-%m-%d %H:%M:%S')))
+
+                    self.conn.commit()
+                else:
+                    sql = 'update corporations set '\
+                          'market=%s, '\
+                          'comp_name=%s, '\
+                          'industry=%s, '\
+                          'products=%s, '\
+                          'listed_at=%s, '\
+                          'sett_month=%s, '\
+                          'ceo=%s, '\
+                          'url=%s, '\
+                          'region=%s, '\
+                          'updated_at=%s '\
+                          'where id=%s'
+                    curs.execute(sql, (
+                        market, comp_name, industry, products, listed_at, sett_month, ceo, url, region, time.strftime('%Y-%m-%d %H:%M:%S'), rs['id']))
+                    self.conn.commit()
+
+                        # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
+        finally:
+            pass
+
+    def corporations(self):
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = "select code, comp_name from corporations"
+                curs.execute(sql)
+
+                rs = curs.fetchall()
+                return rs
+        finally:
+            pass
+
     def close(self):
         self.conn.close()

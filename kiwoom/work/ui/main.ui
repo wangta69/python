@@ -34,6 +34,7 @@
     <addaction name="depositInfoAction"/>
     <addaction name="accountBalanceInfoAction"/>
     <addaction name="unContractedInfoAction"/>
+    <addaction name="realtimeDataAction"/>
    </widget>
    <widget class="QMenu" name="menuStockInfo">
     <property name="title">
@@ -41,6 +42,7 @@
     </property>
     <addaction name="foreignerPlatformAction"/>
     <addaction name="financialStaPlatformAction"/>
+    <addaction name="listedCorporationAction"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -114,6 +116,16 @@
   <action name="menuHelpPlatform">
    <property name="text">
     <string>Platform</string>
+   </property>
+  </action>
+  <action name="realtimeDataAction">
+   <property name="text">
+    <string>실시간데이타</string>
+   </property>
+  </action>
+  <action name="listedCorporationAction">
+   <property name="text">
+    <string>상장사</string>
    </property>
   </action>
  </widget>

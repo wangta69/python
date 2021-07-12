@@ -99,6 +99,7 @@ class KiwoomAPI(QAxWidget):
     # ========== #
     # TR 요청
     def Call_TR(self, strTrCode, sRQName):
+        print('================', strTrCode, sRQName) # ================ OPT10001 OPT10001
         self.ret_data[strTrCode] = {}
         self.ret_data[strTrCode]['Data'] = {}
 

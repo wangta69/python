@@ -64,7 +64,7 @@ class Crawling(threading.Thread):
             # code = row['종목코드']
             # name = row['회사명']
             # print(row['회사명'], row['종목코드'], len(row['종목코드']))
-
+            code = row['종목코드'].zfill(6)
             if len(row['종목코드']) == 6:
                 url = url_tmpl % (row['종목코드'])
                 tables = pd.read_html(url, encoding='euc-kr')

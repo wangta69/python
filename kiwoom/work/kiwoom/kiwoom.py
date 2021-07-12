@@ -7,6 +7,7 @@ from .win_my_info import MyInfoWindow
 from .win_deposit_info import DepositInfoWindow
 from .win_account_balance_info import AccountBalanceInfoWindow
 from .win_uncontract_info import UncontractInfoWindow
+from .win_realtime import RealtimeWindow
 
 class Kiwoom(QAxWidget):
     def __init__(self, mainWindow):
@@ -56,13 +57,32 @@ class Kiwoom(QAxWidget):
         # self.calculator()
       #  self.menu()
 
+    # -------------------------------------
+    # connect
+    # -------------------------------------
+    def connect(self):
+        self.create_kiwoom_instance()
+        self.event_collection()  # 이벤트와 슬롯을 메모리에 먼저 생성.
+        self.login()
+        self.get_account_info()  # 계좌 번호만 얻어오기
+        self.get_deposit_info()  # 예수금 관련된 정보 얻어오기
+        self.get_account_evaluation_balance()  # 계좌평가잔고내역 얻어오기
+        self.not_signed_account()  # 미체결내역 얻어오기
+        self.calculator()
+
     # COM 오브젝트 생성.
     def create_kiwoom_instance(self):
         self.setControl("KHOPENAPI.KHOpenAPICtrl.1")  # 레지스트리에 저장된 키움 openAPI 모듈 불러오기
 
     def event_collection(self):
-        self.OnEventConnect.connect(self.login_slot)  # 로그인 관련 이벤트
-        self.OnReceiveTrData.connect(self.tr_slot)  # 트랜잭션 요청 관련 이벤트
+        self.OnReceiveMsg.connect(self.E_OnReceiveMsg)
+
+        # 로그인 버전처리
+        self.OnEventConnect.connect(self.E_OnEventConnect)  # 로그인 관련 이벤트
+
+        # 조회와 실시간 데이터 처리
+        self.OnReceiveTrData.connect(self.E_OnReceiveTrData)   # 트랜잭션 요청 관련 이벤트
+        self.OnReceiveRealData.connect(self.E_OnReceiveRealData)
 
     def get_account_info(self):
         account_list = self.dynamicCall("GetLoginInfo(QString)", "ACCNO")
@@ -105,40 +125,11 @@ class Kiwoom(QAxWidget):
             self.account_event_loop.exec_()
 
     # -------------------------------------
-    # connect
-    # -------------------------------------
-    def connect(self):
-        self.create_kiwoom_instance()
-        self.event_collection()  # 이벤트와 슬롯을 메모리에 먼저 생성.
-        self.login()
-        self.get_account_info()  # 계좌 번호만 얻어오기
-        self.get_deposit_info()  # 예수금 관련된 정보 얻어오기
-        self.get_account_evaluation_balance()  # 계좌평가잔고내역 얻어오기
-        self.not_signed_account()  # 미체결내역 얻어오기
-        self.calculator()
-    # -------------------------------------
     # 로그인 관련
     # -------------------------------------
     def login(self):
-
-
-
-
-
         self.dynamicCall("CommConnect()")  # 시그널 함수 호출.
         self.login_event_loop.exec_()
-
-    def login_slot(self, err_code):
-        if err_code == 0:
-            print("로그인 성공")
-            # self.mainWindow.statusBar.showMessage("Connected")
-        else:
-            print("로그인 실패")
-            # os.system('cls') # console을 지울때 사용 'clear for linux and mac
-            # self.mainWindow.statusBar.showMessage("로그인 실패 - 에러 내용 :", errors(err_code)[1])
-            # sys.exit(0)
-            # print("로그인 실패 - 에러 내용 :", errors(err_code)[1])
-        self.login_event_loop.exit()
 
     # -------------------------------------
     # 로그인 상태 관련
@@ -207,6 +198,13 @@ class Kiwoom(QAxWidget):
         # input()
 
     # -------------------------------------
+    # 실시간 거래데이타 가져오기
+    # -------------------------------------
+    def realtime(self):
+        self.realtimeWindow = RealtimeWindow(self)
+        self.realtimeWindow.show()
+
+    # -------------------------------------
     # 미체결 내역 정보
     # -------------------------------------
     def uncontract_info(self):
@@ -220,7 +218,28 @@ class Kiwoom(QAxWidget):
         # else:
         #     print(table)
         # input()
-    def tr_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+
+    ### Event 함수 ###
+    ## 공통 ##
+    def E_OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
+        print(sScrNo, sRQName, sTrCode, sMsg)
+        pass
+
+    ## 로그인 버전처리 ##
+    def E_OnEventConnect(self, err_code):
+        if err_code == 0:
+            print("로그인 성공")
+            # self.mainWindow.statusBar.showMessage("Connected")
+        else:
+            print("로그인 실패")
+            # os.system('cls') # console을 지울때 사용 'clear for linux and mac
+            # self.mainWindow.statusBar.showMessage("로그인 실패 - 에러 내용 :", errors(err_code)[1])
+            # sys.exit(0)
+            # print("로그인 실패 - 에러 내용 :", errors(err_code)[1])
+        self.login_event_loop.exit()
+
+    ## 조회와 실시간 데이터 처리 ##
+    def E_OnReceiveTrData(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         if sRQName == "예수금상세현황요청":
             deposit = self.dynamicCall(
                 "GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "예수금")
@@ -433,6 +452,9 @@ class Kiwoom(QAxWidget):
                 self.day_kiwoom_db(stock_code, None, 2)
             else:
                 self.calculator_event_loop.exit()
+
+    def E_OnReceiveRealData(self, sCode, sRealType, sRealData):
+        print(sCode, sRealType, sRealData)
 
     def cancel_screen_number(self, sScrNo):
         self.dynamicCall("DisconnectRealData(QString)", sScrNo)

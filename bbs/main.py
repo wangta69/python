@@ -30,7 +30,6 @@ class MyWindow(QMainWindow, form_class):
         count = 0;
         for row in rows:
             # print(row[0], row[1], row[2], row[3])
-            print(row)
             self.tableWidget.setItem(count, 0, QTableWidgetItem(str(row[0])))
             self.tableWidget.setItem(count, 1, QTableWidgetItem(row[1]))
             self.tableWidget.setItem(count, 2, QTableWidgetItem(row[2]))

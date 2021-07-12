@@ -4,6 +4,7 @@ from PyQt5 import uic
 from kiwoom.kiwoom import Kiwoom
 from stockinfo.foreigner import Foreigner
 from stockinfo.financialStatement import FinancialStatements
+from stockinfo.listedCorporation import ListedCorporation
 
 from help.platformInfo import PlatformInfoWindow
 from subwindow import SubWindow
@@ -31,10 +32,13 @@ class MainWindow(QMainWindow, form_class):
         self.depositInfoAction.triggered.connect(self.kiwoom.deposit_info)
         self.accountBalanceInfoAction.triggered.connect(self.kiwoom.account_evaulation_balance_info)
         self.unContractedInfoAction.triggered.connect(self.kiwoom.uncontract_info)
+        self.realtimeDataAction.triggered.connect(self.kiwoom.realtime)
 
         # 자료
         self.foreignerPlatformAction.triggered.connect(self.foreigner.info)
         self.financialStaPlatformAction.triggered.connect(self.financialThread)
+        self.listedCorporationAction.triggered.connect(self.listedCorporation)
+
 
         # File
         self.exitAction.triggered.connect(qApp.quit)
@@ -46,6 +50,9 @@ class MainWindow(QMainWindow, form_class):
         # Status Bar
         self.statusBar().showMessage('Not connected')
 
+    def listedCorporation(self):
+        self.listedCorporation = ListedCorporation(self)
+        self.listedCorporation.show()
 
     def financialThread(self):
         self.financialStatement = FinancialStatements(self)
