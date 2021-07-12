@@ -1,26 +1,23 @@
 from PyQt5.QtWidgets import QMainWindow, qApp
+# from PyQt5 import QtWidgets
 from PyQt5 import uic
-from work.kiwoom.kiwoom import Kiwoom
-from work.stockInfo.foreigner import Foreigner
-from work.stockInfo.financialStatement import FinancialStatements
+from kiwoom.kiwoom import Kiwoom
+from stockinfo.foreigner import Foreigner
+from stockinfo.financialStatement import FinancialStatements
 
 from help.platformInfo import PlatformInfoWindow
 from subwindow import SubWindow
 
 form_class = uic.loadUiType("ui/main.ui")[0]
 class MainWindow(QMainWindow, form_class):
-
     def __init__(self):
         super().__init__()
         self.setupUi(self) # 현재 form_class를 선택한다.
         self.kiwoom = Kiwoom(MainWindow)
         self.foreigner = Foreigner(MainWindow)
-
-
         self.initUI()
 
     def initUI(self):
-        pass
         # self.setWindowTitle('Main Window')
         # _translate = QCoreApplication.translate
         # self.resize(800, 600)
@@ -71,5 +68,5 @@ class MainWindow(QMainWindow, form_class):
         if r:
             text = win.edit.text()
             self.label.setText(text)
-    def show(self):
-        super().show()
+    # def show(self):
+    #     super().show()

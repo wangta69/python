@@ -1,7 +1,7 @@
 import os
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
-from kiwoom.config.errCode import *
+from kiwoom.coinfig.errCode import *
 from .win_login_connect_state import LoginConnectStateWindow
 from .win_my_info import MyInfoWindow
 from .win_deposit_info import DepositInfoWindow

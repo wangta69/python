@@ -46,7 +46,7 @@ class Crawling(threading.Thread):
                         sql = 'update financeinnfo set q2=%s, updated_at=%s where id=%s'
                         curs.execute(sql, (q2, time.strftime('%Y-%m-%d %H:%M:%S'), rs['id']))
                         self.conn.commit()
-                    # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
+                        # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
         finally:
             print('')
         #     self.conn.close()
