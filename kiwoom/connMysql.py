@@ -47,6 +47,7 @@ class Mysql:
                     # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
 
         finally:
+            pass
             self.conn.close()
 
 

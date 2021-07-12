@@ -33,11 +33,16 @@ class FinancialStatements(QWidget, form_class):
         self.setupUi(self)  # 현재 form_class를 선택한다.
         self.LoadDataAction.clicked.connect(self.LoadDataClicked)
         self.CrawlingDataction.clicked.connect(self.CrawlingDataClicked)
-
+    """
+        저장된 데이타 호출하기
+    """
     def LoadDataClicked(self):
         print('LoadData')
         pass
 
+    """
+        클릭시 데이타를 크롤링한다.
+    """
     def CrawlingDataClicked(self):
         crawling = Crawling()
         crawling.start()
