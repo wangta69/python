@@ -2,13 +2,13 @@ import os
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
 # from kiwoom.config.errCode import *
-from .win_login_connect_state import LoginConnectStateWindow
-from .win_my_info import MyInfoWindow
-from .win_deposit_info import DepositInfoWindow
-from .win_account_balance_info import AccountBalanceInfoWindow
-from .win_uncontract_info import UncontractInfoWindow
-from .win_realtime import RealtimeWindow
-from .win_condition_search import ConditionSearchWindo
+from kiwoom.win_login_connect_state import LoginConnectStateWindow
+from kiwoom.win_my_info import MyInfoWindow
+from kiwoom.win_deposit_info import DepositInfoWindow
+from kiwoom.win_account_balance_info import AccountBalanceInfoWindow
+from kiwoom.win_uncontract_info import UncontractInfoWindow
+from kiwoom.win_realtime import RealtimeWindow
+from kiwoom.win_condition_search import ConditionSearchWindo
 
 class Kiwoom(QAxWidget):
     def __init__(self, mainWindow):
@@ -20,7 +20,7 @@ class Kiwoom(QAxWidget):
         self.login_event_loop = QEventLoop()  # 로그인 담당 이벤트 루프
         self.account_event_loop = QEventLoop()
         self.calculator_event_loop = QEventLoop()
-        self.calculator_event_loop = QEventLoop() # 조건검색 이벤트 루프
+
 
         # # 초기 작업
         # self.create_kiwoom_instance()
@@ -86,8 +86,8 @@ class Kiwoom(QAxWidget):
         self.OnReceiveTrData.connect(self.E_OnReceiveTrData)   # 트랜잭션 요청 관련 이벤트
         self.OnReceiveRealData.connect(self.E_OnReceiveRealData)
         
-        # 조건검색식 관련
-        self.OnReceiveConditionVer.connect(self.E_OnReceiveConditionVer)
+        # # 조건검색식 관련
+        # self.OnReceiveConditionVer.connect(self.E_OnReceiveConditionVer)
 
     def get_account_info(self):
         account_list = self.dynamicCall("GetLoginInfo(QString)", "ACCNO")
@@ -474,58 +474,6 @@ class Kiwoom(QAxWidget):
         print('sCode', sCode)
         print('sRealType', sRealType)
         print('sRealData', sRealData)
-
-    """
-        getConditionLoad() 메서드의 조건식 목록 요청에 대한 응답 이벤트
-        
-        :param receive: int - 응답결과(1: 성공, 나머지 실패)
-        :param msg: string - 메세지
-    """
-    def E_OnReceiveConditionVer(self, receive, msg):
-        try:
-            if not receive:
-                return
-
-            self.condition = self.getConditionNameList()
-            print("조건식 개수: ", len(self.condition))
-
-            for key in self.condition.keys():
-                print("조건식: ", key, ": ", self.condition[key])
-                # print("key type: ", type(key))
-
-        except Exception as e:
-            print(e)
-
-        finally:
-            self.calculator_event_loop.exit()
-        # pass
-
-    def getConditionNameList(self):
-        print("[getConditionNameList]")
-        """
-        조건식 획득 메서드
-
-        조건식을 딕셔너리 형태로 반환합니다.
-        이 메서드는 반드시 receiveConditionVer() 이벤트 메서드안에서 사용해야 합니다.
-
-        :return: dict - {인덱스:조건명, 인덱스:조건명, ...}
-        """
-
-        data = self.dynamicCall("GetConditionNameList()")
-
-        if data == "":
-            print("getConditionNameList(): 사용자 조건식이 없습니다.")
-
-        conditionList = data.split(';')
-        del conditionList[-1]
-
-        conditionDictionary = {}
-
-        for condition in conditionList:
-            key, value = condition.split('^')
-            conditionDictionary[int(key)] = value
-
-        return conditionDictionary
 
     def cancel_screen_number(self, sScrNo):
         self.dynamicCall("DisconnectRealData(QString)", sScrNo)
