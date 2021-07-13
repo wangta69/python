@@ -33,12 +33,12 @@ class Trie:
 
     def starts_with(self, prefix):
         current_node = self.head
-        print('starts_with', current_node)
+        # print('starts_with', current_node)
         words = []
 
         for p in prefix:
-            print('prefix', prefix)
-            print('p', p)
+            # print('prefix', prefix)
+            # print('p', p)
             if p in current_node.children:
                 current_node = current_node.children[p]
             else:

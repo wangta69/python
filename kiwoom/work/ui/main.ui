@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>1295</width>
     <height>600</height>
    </rect>
   </property>
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1295</width>
      <height>21</height>
     </rect>
    </property>
@@ -35,6 +35,7 @@
     <addaction name="accountBalanceInfoAction"/>
     <addaction name="unContractedInfoAction"/>
     <addaction name="realtimeDataAction"/>
+    <addaction name="conditionSearchAction"/>
    </widget>
    <widget class="QMenu" name="menuStockInfo">
     <property name="title">
@@ -126,6 +127,11 @@
   <action name="listedCorporationAction">
    <property name="text">
     <string>상장사</string>
+   </property>
+  </action>
+  <action name="conditionSearchAction">
+   <property name="text">
+    <string>조건검색식</string>
    </property>
   </action>
  </widget>

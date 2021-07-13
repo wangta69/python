@@ -1,6 +1,8 @@
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5 import uic
 import pandas as pd
+import re
 import numpy as np
 from .financialStatementCrawling import Crawling
 # https://youngwonhan-family.tistory.com/46
@@ -16,7 +18,11 @@ class ListedCorporation(QWidget, form_class):
         self.radioKOSPI.clicked.connect(self.radioButtonClicked)
         self.radioKOSDAQ.clicked.connect(self.radioButtonClicked)
         self.updateButton.clicked.connect(self.update)
-        # self.lineedit_Test.textChanged.connect(self.lineeditTextFunction)
+        self.lineEdit.textEdited.connect(self.lineeditTextChanged)
+        self.listView.clicked.connect(self.listviewItemClicked)
+        self.realtimeData.clicked.connect(self.realtimeDataClicked)
+        # self.listView.itemClicked.connect(self.listviewItemClicked)
+        # self.lineEdit.textChanged.connect(self.lineeditTextChanged)
         # self.lineEdit_search.returnPressed.connect(self.inquire_list_func)
         self.mysql = Mysql()
         self.insertKeyword()
@@ -94,16 +100,63 @@ class ListedCorporation(QWidget, form_class):
     """
     def insertKeyword(self):
         corporations = self.mysql.corporations()
-        trie = Trie()
+        self.trie = Trie()
 
         for row in corporations:
-            trie.insert(row['comp_name'])
+            self.trie.insert(row['comp_name'] + '(' + row['code'] + ')')
 
         # result = trie.search("해성")
         # result = trie.search("car")
 
-        result = trie.starts_with(('해성'))
-        print('result', result)
+
+
+    def lineeditTextChanged(self):
+        text = self.lineEdit.text()
+        result = self.trie.starts_with((text))
+        model = QStandardItemModel()
+        if result and len(text) >= 1:
+            for f in result:
+                model.appendRow(QStandardItem(f))
+        self.listView.setModel(model)
+
+    def listviewItemClicked(self, index):
+        text = self.listView.model().data(index)
+        print(text)
+       # regex = "\(.*\)|\s-\s.*"
+       # regex = '\\(.*\\)|\\s-\\s.*'
+       #  regex = '\(.*\)|s-\s.*'
+        regex = r'\([^)]*\)'
+        text = re.sub(regex, '', text)
+        print(text)
+        print(regex)
+        self.lineEdit.setText(text)
+
+    def realtimeDataClicked(self):
+        # 클릭시 실시간 차트 가져오기
+        pass
+
+    # def keyReleaseEvent(self, event):
+    #     print('keyReleaseEvent', event)
+    #
+    # def keyPressEvent(self, event):
+    #     print('keyPressEvent')
+    #     print(event)
+    #     print(event.key())
+    #
+    #     # if event.key() == QtCore.Qt.Key_Up:
+    #     #     text = str(self.text())
+    #     #     next = self.parent().history.next(text)
+    #     #     if next is not None:
+    #     #         self.setText(next)
+    #     # elif event.key() == QtCore.Qt.Key_Down:
+    #     #     prev = self.parent().history.prev()
+    #     #     if prev is not None:
+    #     #         self.setText(prev)
+    #     # elif event.key() in [QtCore.Qt.Key_PageUp, QtCore.Qt.Key_PageDown]:
+    #     #     self.parent().textArea.keyPressEvent(event)
+    #     # self.parent().mainwindow.idletime = 0
+    #     # QtWidgets.QLineEdit.keyPressEvent(self, event)
+
 
 
 

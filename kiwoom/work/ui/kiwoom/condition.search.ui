@@ -6,44 +6,44 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
+    <width>583</width>
     <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="realtimeData">
+  <widget class="QLineEdit" name="lineEdit">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>60</y>
-     <width>75</width>
-     <height>31</height>
+     <x>90</x>
+     <y>70</y>
+     <width>211</width>
+     <height>21</height>
     </rect>
-   </property>
-   <property name="text">
-    <string>검색</string>
    </property>
   </widget>
   <widget class="QListView" name="listView">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>90</x>
      <y>100</y>
      <width>211</width>
      <height>171</height>
     </rect>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QPushButton" name="realtimeData">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>310</x>
      <y>70</y>
-     <width>211</width>
-     <height>21</height>
+     <width>75</width>
+     <height>23</height>
     </rect>
+   </property>
+   <property name="text">
+    <string>실시간데이타</string>
    </property>
   </widget>
  </widget>

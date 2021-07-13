@@ -1,13 +1,14 @@
 import os
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
-from kiwoom.coinfig.errCode import *
+# from kiwoom.config.errCode import *
 from .win_login_connect_state import LoginConnectStateWindow
 from .win_my_info import MyInfoWindow
 from .win_deposit_info import DepositInfoWindow
 from .win_account_balance_info import AccountBalanceInfoWindow
 from .win_uncontract_info import UncontractInfoWindow
 from .win_realtime import RealtimeWindow
+from .win_condition_search import ConditionSearchWindo
 
 class Kiwoom(QAxWidget):
     def __init__(self, mainWindow):
@@ -19,6 +20,7 @@ class Kiwoom(QAxWidget):
         self.login_event_loop = QEventLoop()  # 로그인 담당 이벤트 루프
         self.account_event_loop = QEventLoop()
         self.calculator_event_loop = QEventLoop()
+        self.calculator_event_loop = QEventLoop() # 조건검색 이벤트 루프
 
         # # 초기 작업
         # self.create_kiwoom_instance()
@@ -83,6 +85,9 @@ class Kiwoom(QAxWidget):
         # 조회와 실시간 데이터 처리
         self.OnReceiveTrData.connect(self.E_OnReceiveTrData)   # 트랜잭션 요청 관련 이벤트
         self.OnReceiveRealData.connect(self.E_OnReceiveRealData)
+        
+        # 조건검색식 관련
+        self.OnReceiveConditionVer.connect(self.E_OnReceiveConditionVer)
 
     def get_account_info(self):
         account_list = self.dynamicCall("GetLoginInfo(QString)", "ACCNO")
@@ -196,28 +201,30 @@ class Kiwoom(QAxWidget):
         #     print(f"보유 종목 수 : {len(self.account_stock_dict)}개")
         #     print(table)
         # input()
-
-    # -------------------------------------
-    # 실시간 거래데이타 가져오기
-    # -------------------------------------
-    def realtime(self):
-        self.realtimeWindow = RealtimeWindow(self)
-        self.realtimeWindow.show()
-
+        
     # -------------------------------------
     # 미체결 내역 정보
     # -------------------------------------
     def uncontract_info(self):
         self.winUncontractInfoWindow = UncontractInfoWindow(self)
         self.winUncontractInfoWindow.show()
-        # os.system('cls')
-        # print()
-        # table = self.make_table("실시간미체결요청")
-        # if len(self.not_signed_account_dict) == 0:
-        #     print("미체결 내역이 없습니다!")
-        # else:
-        #     print(table)
-        # input()
+        
+    # -------------------------------------
+    # 실시간 거래데이타 가져오기
+    # -------------------------------------
+    def realtime(self):
+        self.realtimeWindow = RealtimeWindow(self)
+        self.realtimeWindow.show()
+    
+    """
+        조건검색
+    """
+    def conditionSearch(self):
+        self.conditionSearchWindow = ConditionSearchWindo(self)
+        self.conditionSearchWindow.show()
+        pass
+
+
 
     ### Event 함수 ###
     ## 공통 ##
@@ -453,8 +460,72 @@ class Kiwoom(QAxWidget):
             else:
                 self.calculator_event_loop.exit()
 
+    """
+        :param sRealType: 주식예상체결, 장시작시간, 주식우선호가, 주식당일거래원
+        :param sRealData : 
+            주식우선호가: +79900	+79800
+            주식예상체결: sRealData 152707	+79900	+200	+0.25	--212	715156	2
+            주식체결: 153028	+79800	+100	+0.13	+79900	+79800	 774560	9700742	775794	+80000	+80200	+79800	2	-67366	-3348496884	-99.31	0.16	208	70.86	4763886	2	0	-99.57	000000	000000	10022	090008	094034	153028	5101149	3614467	-41.47	46716	28239	 61809888	 0	 0	 0	7980	6384	79973	425
+            주식당일거래원: JP모간서울	1184351	+314738	033	DHDB	한  화	1038978	+24113	021	!!!!	이베스트	944407	+514	063	!!!! .....
+            장시작시간 : 8	888888	000000
+            장시작시간 : 2	152700	000300
+    """
     def E_OnReceiveRealData(self, sCode, sRealType, sRealData):
-        print(sCode, sRealType, sRealData)
+        print('sCode', sCode)
+        print('sRealType', sRealType)
+        print('sRealData', sRealData)
+
+    """
+        getConditionLoad() 메서드의 조건식 목록 요청에 대한 응답 이벤트
+        
+        :param receive: int - 응답결과(1: 성공, 나머지 실패)
+        :param msg: string - 메세지
+    """
+    def E_OnReceiveConditionVer(self, receive, msg):
+        try:
+            if not receive:
+                return
+
+            self.condition = self.getConditionNameList()
+            print("조건식 개수: ", len(self.condition))
+
+            for key in self.condition.keys():
+                print("조건식: ", key, ": ", self.condition[key])
+                # print("key type: ", type(key))
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            self.calculator_event_loop.exit()
+        # pass
+
+    def getConditionNameList(self):
+        print("[getConditionNameList]")
+        """
+        조건식 획득 메서드
+
+        조건식을 딕셔너리 형태로 반환합니다.
+        이 메서드는 반드시 receiveConditionVer() 이벤트 메서드안에서 사용해야 합니다.
+
+        :return: dict - {인덱스:조건명, 인덱스:조건명, ...}
+        """
+
+        data = self.dynamicCall("GetConditionNameList()")
+
+        if data == "":
+            print("getConditionNameList(): 사용자 조건식이 없습니다.")
+
+        conditionList = data.split(';')
+        del conditionList[-1]
+
+        conditionDictionary = {}
+
+        for condition in conditionList:
+            key, value = condition.split('^')
+            conditionDictionary[int(key)] = value
+
+        return conditionDictionary
 
     def cancel_screen_number(self, sScrNo):
         self.dynamicCall("DisconnectRealData(QString)", sScrNo)

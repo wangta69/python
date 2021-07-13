@@ -111,6 +111,21 @@ class Mysql:
                 return rs
         finally:
             pass
+    def codeFromCompName(self, comp_name):
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                # sql = "select comp_name from corporations"
+                # curs.execute(sql)
+                sql = "select code from corporations where comp_name=%s limit 0, 1"
+                curs.execute(sql, (comp_name))
+                rs = curs.fetchone()
+
+                if rs == None:  # 값이 없을 경우 현재 값 입력
+                    return ''
+                else:
+                    return rs['code']
+        finally:
+            pass
 
     def close(self):
         self.conn.close()

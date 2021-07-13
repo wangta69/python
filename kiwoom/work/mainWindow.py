@@ -33,6 +33,7 @@ class MainWindow(QMainWindow, form_class):
         self.accountBalanceInfoAction.triggered.connect(self.kiwoom.account_evaulation_balance_info)
         self.unContractedInfoAction.triggered.connect(self.kiwoom.uncontract_info)
         self.realtimeDataAction.triggered.connect(self.kiwoom.realtime)
+        self.conditionSearchAction.triggered.connect(self.kiwoom.conditionSearch)
 
         # 자료
         self.foreignerPlatformAction.triggered.connect(self.foreigner.info)
@@ -75,5 +76,11 @@ class MainWindow(QMainWindow, form_class):
         if r:
             text = win.edit.text()
             self.label.setText(text)
+
+    def keyPressEvent(self, e):
+        print('keyPressEvent from mainWindow', e)
+
     # def show(self):
     #     super().show()
+
+
