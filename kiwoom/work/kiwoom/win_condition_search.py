@@ -21,7 +21,7 @@ GetConditionLoad 실행 -> 서버에서 응답이 오면 OnReceiveConditionVer �
 SendCondition 실행 -> 서버에서 응답이 오면 OnReceiveTrCondition 실행되며 해당 조건 검색 결과 표시(종목 코드)
 -> (SendCondition 실시간 요청시) 해당 조건 검색 결과에 변동이 있을 경우 OnReceiveRealCondition 실행되어 실시간으로 종목 편입/이탈 결과 출력
 """
-class ConditionSearchWindo(QWidget, form_class):
+class ConditionSearchWindow(QWidget, form_class):
 
     def __init__(self, kiwoom=None):
         super().__init__()

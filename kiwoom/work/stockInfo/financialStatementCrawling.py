@@ -65,21 +65,21 @@ class Crawling(threading.Thread):
             # name = row['회사명']
             # print(row['회사명'], row['종목코드'], len(row['종목코드']))
             code = row['종목코드'].zfill(6)
-            if len(row['종목코드']) == 6:
-                url = url_tmpl % (row['종목코드'])
-                tables = pd.read_html(url, encoding='euc-kr')
-                df = tables[3]
-                try:
-                    gain = df.iloc[1, 10]
-                    privious = df.iloc[1, 9]
-                    # if gain != 'nan':
-                    if isinstance(gain, float):
-                        is_NAN = math.isnan(gain)
-                        if not is_NAN:
-                            print(row['회사명'], row['종목코드'])
-                            print(privious, gain)
-                            self.update(row['종목코드'], row['회사명'], privious, gain)
-                except IndexError:
+           # if len(row['종목코드']) == 6:
+            url = url_tmpl % (code)
+            tables = pd.read_html(url, encoding='euc-kr')
+            df = tables[3]
+            try:
+                gain = df.iloc[1, 10]
+                privious = df.iloc[1, 9]
+                # if gain != 'nan':
+                if isinstance(gain, float):
+                    is_NAN = math.isnan(gain)
+                    if not is_NAN:
+                        print(row['회사명'], row['종목코드'])
+                        print(privious, gain)
+                        self.update(row['종목코드'], row['회사명'], privious, gain)
+            except IndexError:
                     gain = 'nan'
             time.sleep(1)
 

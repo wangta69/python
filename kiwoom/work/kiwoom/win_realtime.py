@@ -13,10 +13,10 @@ from kiwoom.config.kiwoom import output_list
 form_class = uic.loadUiType("ui/kiwoom/realtime.ui")[0]
 class RealtimeWindow(QWidget, form_class):
 
-    def __init__(self, parent=None):
+    def __init__(self, kiwoom=None):
         super().__init__()
-        self.parent = parent
-        self.isLogin = parent.dynamicCall("GetConnectState()")
+        self.kiwoom = kiwoom
+        self.isLogin = kiwoom.dynamicCall("GetConnectState()")
         self.setupUi(self)  # 현재 form_class를 선택한다.
 
         self.lineEdit.textEdited.connect(self.lineeditTextChanged)
@@ -43,9 +43,9 @@ class RealtimeWindow(QWidget, form_class):
         else:
             self.output_list = ['종목명']
 
-            self.parent.SetInputValue("종목코드", code)
-            self.parent.CommRqData("OPT10001", "OPT10001", 0, "0101")
-        # return self.parent.ret_data
+            self.kiwoom.SetInputValue("종목코드", code)
+            self.kiwoom.CommRqData("OPT10001", "OPT10001", 0, "0101")
+        # return self.kiwoom.ret_data
 
     """
         검색용 키워드를 미리 입력해 둔다.
