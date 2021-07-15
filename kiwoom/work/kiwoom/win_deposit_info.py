@@ -1,46 +1,50 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QLabel
-from PyQt5.QtCore import QRect
+from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt5 import uic
+from collections import deque
 
-class DepositInfoWindow(QWidget):
+form_class = uic.loadUiType("ui/kiwoom/win_deposit_info.ui")[0]
 
-    def __init__(self, parent=None):
+class DepositInfoWindow(QWidget, form_class):
+
+    def __init__(self, kiwoom=None):
         super().__init__()
-        # parent.get_deposit_info()
-        # print(f"\n예수금 : {parent.deposit}원")
-        # print(f"출금 가능 금액 : {parent.withdraw_deposit}원")
-        # print(f"주문 가능 금액 : {parent.order_deposit}원")
-        self.parent = parent
-        self.initUI()
 
-    def initUI(self):
-        okButton = QPushButton('OK')
-        okButton.clicked.connect(self.close)
+        self.kiwoom = kiwoom
+        self.setupUi(self)  # 현재 form_class를 선택한다.
+        self.isLogin = kiwoom.is_login()
 
-        hbox = QHBoxLayout()
-        hbox.addStretch(1)
-        hbox.addWidget(okButton)
-        hbox.addStretch(1)
+        # ComboBox에 기능 연결
+        self.comboAccount.currentIndexChanged.connect(self.comboBoxFunction)
 
-        vbox = QVBoxLayout()
-        vbox.addStretch(3)
-        vbox.addLayout(hbox)
-        vbox.addStretch(1)
+        if self.isLogin != 1:
+            QMessageBox.about(self, 'Alert', "먼저 로그인 해 주세요")
+        else:
+            self.get_account_number()
 
+    def get_account_number(self):
+        accounts_list = self.kiwoom.get_login_info("ACCNO")
+        accounts = deque(accounts_list.split(';'))
+        accounts.appendleft('== 선택 ==')
+        self.comboAccount.addItems(accounts)
 
-        self.setLayout(vbox)
+    def comboBoxFunction(self):
+        account_number = self.comboAccount.currentText()
+        if account_number != '== 선택 ==':
+            self.kiwoom.get_deposit_info(account_number, 0, 11)
 
-        self.setWindowTitle('Login State')
-        self.setGeometry(300, 300, 300, 200)
+            self.labelDepositAmt.setText(str(self.kiwoom.deposit) + '원')  # 예수금
+            self.labelAvailWithDrawAmt.setText(str(self.kiwoom.withdraw_deposit) + '원')  # 출금 가능 금액
+            self.labelAvailOrderAmt.setText(str(self.kiwoom.order_deposit) + '원')  # 주문 가능 금액
 
-
-        lDeposit= QLabel('예수금: ' + str(self.parent.deposit) + '원', self)
-        lDeposit.setGeometry(QRect(20, 40, 400, 20))
-
-        lWithdraw = QLabel('출금 가능 금액: ' + str(self.parent.withdraw_deposit) + '원', self)
-        # lWithdraw.move(20, 80)
-        lWithdraw.setGeometry(QRect(20, 60, 400, 20))
-
-        lOrder = QLabel('주문 가능 금액: ' + str(self.parent.order_deposit) + '원', self)
-        # lOrder.move(20, 80)
-        lOrder.setGeometry(QRect(20, 80, 400, 20))
+    #
+    #     lDeposit= QLabel('예수금: ' + str(self.kiwoom.deposit) + '원', self)
+    #     lDeposit.setGeometry(QRect(20, 40, 400, 20))
+    #
+    #     lWithdraw = QLabel('출금 가능 금액: ' + str(self.kiwoom.withdraw_deposit) + '원', self)
+    #     # lWithdraw.move(20, 80)
+    #     lWithdraw.setGeometry(QRect(20, 60, 400, 20))
+    #
+    #     lOrder = QLabel('주문 가능 금액: ' + str(self.kiwoom.order_deposit) + '원', self)
+    #     # lOrder.move(20, 80)
+    #     lOrder.setGeometry(QRect(20, 80, 400, 20))
 

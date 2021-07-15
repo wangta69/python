@@ -25,7 +25,6 @@ class MainWindow(QMainWindow, form_class):
         #
 
         # # Kiwoom > menu
-
         self.loginAction.triggered.connect(self.kiwoom.connect)
         self.loginStatusAction.triggered.connect(self.kiwoom.login_connect_state)
         self.userInfoAction.triggered.connect(self.kiwoom.my_info)

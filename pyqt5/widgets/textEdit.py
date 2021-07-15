@@ -5,6 +5,8 @@ from PyQt5 import uic
 
 form_class = uic.loadUiType("textEdit.ui")[0]
 
+# referer : https://wikidocs.net/35477
+
 class WindowClass(QMainWindow, form_class) :
     def __init__(self):
         super().__init__()

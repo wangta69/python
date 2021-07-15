@@ -1,6 +1,5 @@
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
-# from kiwoom.config.errCode import *
 from kiwoom.win_login_connect_state import LoginConnectStateWindow
 from kiwoom.win_my_info import MyInfoWindow
 from kiwoom.win_deposit_info import DepositInfoWindow
@@ -9,6 +8,9 @@ from kiwoom.win_uncontract_info import UncontractInfoWindow
 from kiwoom.win_realtime import RealtimeWindow
 from kiwoom.win_condition_search import ConditionSearchWindow
 from kiwoom.win_order import OrderWindow
+from kiwoom.worker import Worker
+
+
 class Kiwoom(QAxWidget):
     def __init__(self, mainWindow):
         super().__init__()
@@ -17,15 +19,7 @@ class Kiwoom(QAxWidget):
 
         # 이벤트 루프 관련 변수
         self.login_event_loop = QEventLoop()  # 로그인 담당 이벤트 루프
-        self.account_event_loop = QEventLoop()
-        self.calculator_event_loop = QEventLoop()
         self.tr_event_loop = QEventLoop()
-
-
-        # # 초기 작업
-        # self.create_kiwoom_instance()
-        # self.event_collection()  # 이벤트와 슬롯을 메모리에 먼저 생성.
-        # # self.login()
 
         # 계좌 관련 변수
         self.account_number = None
@@ -55,52 +49,71 @@ class Kiwoom(QAxWidget):
 
         self.remained_data = False
 
-        # 초기 작업
-        # self.create_kiwoom_instance()
-        # self.event_collection()  # 이벤트와 슬롯을 메모리에 먼저 생성.
-        # # self.login()
-        # self.get_account_number()  # 계좌 번호만 얻어오기
-        # self.get_deposit_info()  # 예수금 관련된 정보 얻어오기
-        # self.get_account_evaluation_balance()  # 계좌평가잔고내역 얻어오기
-        # self.not_signed_account()  # 미체결내역 얻어오기
-        # self.calculator()
-      #  self.menu()
+        # signal 처리
+        # elf.signal = pyqtSignal(str, str, str)
+        self.worker = Worker()
+        self.worker.signal_login.connect(self.signal_login)
+        self.worker.signal_on_receive_tr_data.connect(self.signal_on_receive_tr_data)
 
-    # -------------------------------------
-    # connect
-    # -------------------------------------
+    def signal_login(self):
+        self.login_event_loop.exit()
+        pass
+
+    def signal_on_receive_tr_data(self, src_no, rq_name, tr_code, record_name, prev_next):
+        if prev_next == '2':
+            self.remained_data = True
+        else:
+            self.remained_data = False
+
+        if rq_name == "예수금상세현황요청":
+            self.onreceive_tr_data_withholdings(tr_code, rq_name)
+        elif rq_name == "계좌평가잔고내역요청":
+            self.onreceive_tr_data_account_evaluation_balance(tr_code, rq_name, prev_next)
+        elif rq_name == "실시간미체결요청":
+            self.onreceive_tr_data_realtime_pending(src_no, tr_code, rq_name, prev_next)
+        elif rq_name == "주식일봉차트조회요청":
+            self.onreceive_tr_data_daily_stock_chart(tr_code, rq_name, prev_next)
+
     def connect(self):
+        """
+        connect
+        :return:
+        """
         self.create_kiwoom_instance()
         self.event_collection()  # 이벤트와 슬롯을 메모리에 먼저 생성.
         self.login()
-        # self.get_account_number()  # 계좌 번호만 얻어오기
-        # self.get_deposit_info()  # 예수금 관련된 정보 얻어오기
-        # self.get_account_evaluation_balance()  # 계좌평가잔고내역 얻어오기
-        # self.not_signed_account()  # 미체결내역 얻어오기
-        # self.calculator()
 
-    # COM 오브젝트 생성.
     def create_kiwoom_instance(self):
+        """
+        COM 오브젝트 생성.
+        :return:
+        """
         self.setControl("KHOPENAPI.KHOpenAPICtrl.1")  # 레지스트리에 저장된 키움 openAPI 모듈 불러오기
 
     def event_collection(self):
-        self.OnReceiveMsg.connect(self.E_OnReceiveMsg)
+        self.OnReceiveMsg.connect(self.worker.on_receive_message)
 
         # 로그인 버전처리
-        self.OnEventConnect.connect(self.E_OnEventConnect)  # 로그인 관련 이벤트
+        # self.OnEventConnect.connect(self.E_OnEventConnect)  # 로그인 관련 이벤트 (CommConnect)
+        self.OnEventConnect.connect(self.worker.on_event_connect)  # 로그인 관련 이벤트 (CommConnect)
 
         # 조회와 실시간 데이터 처리
-        self.OnReceiveTrData.connect(self.E_OnReceiveTrData)   # 트랜잭션 요청 관련 이벤트
-        self.OnReceiveRealData.connect(self.E_OnReceiveRealData)
-        
+        # 일시적으로 데이터를 조회
+        self.OnReceiveTrData.connect(self.worker.on_receive_tr_data)  # 트랜잭션 요청 관련 이벤트 (CommRqData)
+        # 실시간으로 데이타 조회
+        self.OnReceiveRealData.connect(self.worker.on_receive_real_data)  # 실시간 데이타 처리시
+
         # # 조건검색식 관련
-        # self.OnReceiveConditionVer.connect(self.E_OnReceiveConditionVer)
-    # -------------------------------------
-    # 로그인 관련
-    # -------------------------------------
+        self.OnReceiveTrCondition.connect(self.worker.on_receive_tr_condition)
+        self.OnReceiveConditionVer.connect(self.worker.on_receive_condition_ver)
+
     def login(self):
+        """
+        로그인
+        :return:
+        """
         self.dynamicCall("CommConnect()")  # 시그널 함수 호출.
-        self.login_event_loop.exec_() # E_OnEventConnect
+        self.login_event_loop.exec_()  # E_OnEventConnect
 
     def is_login(self):
         return self.dynamicCall("GetConnectState()")  # 시그널 함수 호출.
@@ -126,12 +139,29 @@ class Kiwoom(QAxWidget):
     def set_input_value(self, name, value):
         self.dynamicCall("SetInputValue(QString, QString)", name, value)
 
-    def comm_rq_data(self, rqname, trcode, next, screen_no):
-        self.dynamicCall("CommRqData(QString, QString, int, QString", rqname, trcode, next, screen_no)
+    def comm_rq_data(self, rq_name, tr_code, next_no, screen_no):
+        """
+        :param rq_name:
+        :param tr_code:
+        :param next_no:
+        :param screen_no:
+        :return:
+            tr_code: opw00001('예수금상세현황요청'), opw00018('계좌평가잔고내역요청'),
+            opt10075('실시간미체결요청'), opt10081('주식일봉차트조회요청'), opt10001('종목정보요청')
+        """
+        self.dynamicCall("CommRqData(QString, QString, int, QString", rq_name, tr_code, next_no, screen_no)
         self.tr_event_loop.exec_()
 
-    ## CommGetData (지원하지 않을 계획) => GetCommData
     def _comm_get_data(self, code, real_type, field_name, index, item_name):
+        """
+        CommGetData (지원하지 않을 계획) => GetCommData
+        :param code:
+        :param real_type:
+        :param field_name:
+        :param index:
+        :param item_name:
+        :return:
+        """
         ret = self.dynamicCall("CommGetData(QString, QString, QString, int, QString", code,
                                real_type, field_name, index, item_name)
         return ret.strip()
@@ -148,31 +178,52 @@ class Kiwoom(QAxWidget):
     def cancel_screen_number(self, scr_no):
         self.dynamicCall("DisconnectRealData(QString)", scr_no)
 
-
     #
     # def get_account_number(self):
     #     account_list = self.get_login_info("ACCNO")
     #     account_number = account_list.split(';')[0]
     #     self.account_number = account_number
     #
-    # def get_deposit_info(self, nPrevNext=0):
-    #     self.set_input_value("계좌번호", self.account_number)
-    #     self.set_input_value("비밀번호", " ")
-    #     self.set_input_value("비밀번호입력매체구분", "00")
-    #     self.set_input_value("조회구분", "2")
-    #     self.comm_rq_data("예수금상세현황요청", "opw00001", nPrevNext, self.screen_my_account)
-    #
-    #     self.account_event_loop.exec_()
-    #
-    def get_account_evaluation_balance(self, nPrevNext=0):
-        self.set_input_value("계좌번호", self.account_number)
+
+    def get_deposit_info(self, account_number, prev_next, scr_number):
+        """
+        예수금상세현황요청
+        :param account_number:
+        :param prev_next:
+        :param scr_number:
+        :return:
+        """
+        self.account_number = account_number
+        self.screen_my_account = scr_number
+
+        self.set_input_value("계좌번호", account_number)
+        self.set_input_value("비밀번호", " ")
+        self.set_input_value("비밀번호입력매체구분", "00")
+        self.set_input_value("조회구분", "2")
+        self.comm_rq_data("예수금상세현황요청", "opw00001", prev_next, scr_number)
+
+        # self.account_event_loop.exec_()
+
+    def get_account_evaluation_balance(self, account_number, prev_next, scr_number):
+        """
+        계좌평가잔고내역요청
+        :param account_number:
+        :param prev_next:
+        :param scr_number:
+        :return:
+        """
+        self.account_number = account_number
+        self.screen_my_account = scr_number
+
+        self.set_input_value("계좌번호", account_number)
         self.set_input_value("비밀번호", " ")
         self.set_input_value("비밀번호입력매체구분", "00")
         self.set_input_value("조회구분", "1")
-        self.comm_rq_data("계좌평가잔고내역요청", "opw00018", nPrevNext, self.screen_my_account)
+        self.comm_rq_data("계좌평가잔고내역요청", "opw00018", prev_next, scr_number)
 
-        if not self.account_event_loop.isRunning():
-            self.account_event_loop.exec_()
+        # if not self.account_event_loop.isRunning():
+        #     print('account_event_loop.exec_() start')
+        #     self.account_event_loop.exec_()
 
     def not_signed_account(self, nPrevNext=0):
         self.set_input_value("계좌번호", self.account_number)
@@ -180,70 +231,75 @@ class Kiwoom(QAxWidget):
         self.set_input_value("매매구분", "0")
         self.set_input_value("체결구분", "1")
         self.comm_rq_data("실시간미체결요청", "opt10075", nPrevNext, self.screen_my_account)
+        #
+        # if not self.account_event_loop.isRunning():
+        #     self.account_event_loop.exec_()
 
-        if not self.account_event_loop.isRunning():
-            self.account_event_loop.exec_()
-
-
-
-
-    ## 각각의 윈도우 열기 시작
-    # -------------------------------------
-    # 로그인 상태 관련
-    # -------------------------------------
+    # 각각의 윈도우 열기 시작
     def login_connect_state(self):
+        """
+        로그인 상태 관련
+        :return:
+        """
         self.winLoginConnectState = LoginConnectStateWindow(self)
         self.winLoginConnectState.show()
         # os.system('cls')
         # input()
 
-    # -------------------------------------
-    # 사용자정보 조회
-    # -------------------------------------
     def my_info(self):
+        """
+        사용자정보 조회
+        :return:
+        """
         self.winMyInfoWindow = MyInfoWindow(self)
         self.winMyInfoWindow.show()
 
-    # -------------------------------------
-    # 예수금 조회
-    # -------------------------------------
     def deposit_info(self):
+        """
+        예수금 조회
+        :return:
+        """
         self.winDepositInfoWindow = DepositInfoWindow(self)
         self.winDepositInfoWindow.show()
 
-    # -------------------------------------
-    # 평가금액 정보
-    # -------------------------------------
     def account_evaulation_balance_info(self):
+        """
+        평가금액 정보
+        :return:
+        """
         self.winAccountBalanceInfoWindow = AccountBalanceInfoWindow(self)
         self.winAccountBalanceInfoWindow.show()
-        
-    # -------------------------------------
-    # 미체결 내역 정보
-    # -------------------------------------
+
     def uncontract_info(self):
+        """
+        미체결 내역 정보
+        :return:
+        """
         self.winUncontractInfoWindow = UncontractInfoWindow(self)
         self.winUncontractInfoWindow.show()
-        
-    # -------------------------------------
-    # 실시간 거래데이타 가져오기
-    # -------------------------------------
+
     def realtime(self):
+        """
+        실시간 거래데이타 가져오기
+        :return:
+        """
         self.realtimeWindow = RealtimeWindow(self)
         self.realtimeWindow.show()
-    
-    """
-        조건검색
-    """
+
     def conditionSearch(self):
+        """
+        조건검색
+        :return:
+        """
         self.conditionSearchWindow = ConditionSearchWindow(self)
         self.conditionSearchWindow.show()
         pass
 
-    """
-       order 윈도우
-    """
     def order(self):
+        """
+        order 윈도우
+        :return:
+        """
         self.orderWindow = OrderWindow(self)
         self.orderWindow.show()
         pass
@@ -253,29 +309,16 @@ class Kiwoom(QAxWidget):
 
     ### Event 함수 ###
     ## 공통 ##
-    def E_OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
-        print(sScrNo, sRQName, sTrCode, sMsg)
-        pass
-
-    ## 로그인 버전처리 ##
-    def E_OnEventConnect(self, err_code):
-        if err_code == 0:
-            print("로그인 성공")
-            # self.mainWindow.statusBar.showMessage("Connected")
-        else:
-            print("로그인 실패")
-            # os.system('cls') # console을 지울때 사용 'clear for linux and mac
-            # self.mainWindow.statusBar.showMessage("로그인 실패 - 에러 내용 :", errors(err_code)[1])
-            # sys.exit(0)
-            # print("로그인 실패 - 에러 내용 :", errors(err_code)[1])
-        self.login_event_loop.exit()
 
     ## 조회와 실시간 데이터 처리 ##
 
-    """
-    예수금상세현황요청
-    """
     def onreceive_tr_data_withholdings(self, tr_code, rq_name):
+        """
+        예수금상세현황요청
+        :param tr_code:
+        :param rq_name:
+        :return:
+        """
         deposit = self.get_comm_data(tr_code, rq_name, 0, '예수금')
         self.deposit = int(deposit)
 
@@ -286,12 +329,18 @@ class Kiwoom(QAxWidget):
         self.order_deposit = int(order_deposit)
 
         self.cancel_screen_number(self.screen_my_account)
-        self.account_event_loop.exit()
+        self.tr_event_loop.exit()
 
-    """
-    계좌평가잔고내역요청
-    """
     def onreceive_tr_data_account_evaluation_balance(self, tr_code, rq_name, prev_next):
+        """
+        계좌평가잔고내역요청
+        :param tr_code:
+        :param rq_name:
+        :param prev_next:
+        :return:
+        """
+
+        print('onreceive_tr_data_account_evaluation_balance start');
         if (self.total_buy_money == None or self.total_evaluation_money == None
                 or self.total_evaluation_profit_and_loss_money == None or self.total_yield == None):
             total_buy_money = self.get_comm_data(tr_code, rq_name, 0, '총매입금액')
@@ -353,15 +402,20 @@ class Kiwoom(QAxWidget):
                 {'현재가': stock_present_price})
 
         if prev_next == "2":
-            self.get_account_evaluation_balance(2)
+            self.get_account_evaluation_balance(self.account_number, 2, self.screen_my_account)
         else:
             self.cancel_screen_number(self.screen_my_account)
-            self.account_event_loop.exit()
+            self.tr_event_loop.exit()
 
-    """
-    실시간미체결요청
-    """
     def onreceive_tr_data_realtime_pending(self, scr_no, tr_code, rq_name, prev_next):
+        """
+        실시간미체결요청
+        :param scr_no:
+        :param tr_code:
+        :param rq_name:
+        :param prev_next:
+        :return:
+        """
         cnt = self.get_repeat_cnt(tr_code, rq_name)
 
         for i in range(cnt):
@@ -422,12 +476,16 @@ class Kiwoom(QAxWidget):
             self.not_signed_account(2)
         else:
             self.cancel_screen_number(scr_no)
-            self.account_event_loop.exit()
+            self.tr_event_loop.exit()
 
-    """
-    주식일봉차트조회요청
-    """
     def onreceive_tr_data_daily_stock_chart(self, tr_code, rq_name, prev_next):
+        """
+        주식일봉차트조회요청
+        :param tr_code:
+        :param rq_name:
+        :param prev_next:
+        :return:
+        """
         stock_code = self.get_comm_data(tr_code, rq_name, 0, '종목코드')
         # six_hundred_data = self.dynamicCall("GetCommDataEx(QString, QString)", sTrCode, sRQName)
 
@@ -460,52 +518,64 @@ class Kiwoom(QAxWidget):
         if prev_next == "2":
             self.day_kiwoom_db(stock_code, None, 2)
         else:
-            self.calculator_event_loop.exit()
+            self.tr_event_loop.exit()
 
-    def E_OnReceiveTrData(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-        if sPrevNext == '2':
-            self.remained_data = True
-        else:
-            self.remained_data = False
+    # def E_OnReceiveTrData(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+    #     if sPrevNext == '2':
+    #         self.remained_data = True
+    #     else:
+    #         self.remained_data = False
+    #
+    #     if sRQName == "예수금상세현황요청":
+    #         self.onreceive_tr_data_withholdings(sTrCode, sRQName)
+    #     elif sRQName == "계좌평가잔고내역요청":
+    #         self.onreceive_tr_data_account_evaluation_balance(sTrCode, sRQName, sPrevNext)
+    #     elif sRQName == "실시간미체결요청":
+    #         self.onreceive_tr_data_realtime_pending(sScrNo, sTrCode, sRQName, sPrevNext)
+    #     elif sRQName == "주식일봉차트조회요청":
+    #         self.onreceive_tr_data_daily_stock_chart(sTrCode, sRQName, sPrevNext)
 
-        if sRQName == "예수금상세현황요청":
-            self.onreceive_tr_data_withholdings(sTrCode, sRQName)
-        elif sRQName == "계좌평가잔고내역요청":
-            self.onreceive_tr_data_account_evaluation_balance(sTrCode, sRQName, sPrevNext)
-        elif sRQName == "실시간미체결요청":
-            self.onreceive_tr_data_realtime_pending(sScrNo, sTrCode, sRQName, sPrevNext)
-        elif sRQName == "주식일봉차트조회요청":
-            self.onreceive_tr_data_daily_stock_chart(sTrCode, sRQName, sPrevNext)
+    # def E_OnReceiveRealData(self, sCode, sRealType, sRealData):
+    #     """
+    #     :param sRealType: 주식예상체결, 장시작시간, 주식우선호가, 주식당일거래원
+    #     :param sRealData :
+    #         주식우선호가: +79900	+79800
+    #         주식예상체결: sRealData 152707	+79900	+200	+0.25	--212	715156	2
+    #         주식체결: 153028	+79800	+100	+0.13	+79900	+79800	 774560	9700742	775794	+80000	+80200	+79800
+    #         2	-67366	-3348496884	-99.31	0.16	208	70.86	4763886	2	0	-99.57	000000	000000	10022	090008
+    #         094034	153028	5101149	3614467	-41.47	46716	28239	 61809888	 0	 0	 0	7980	6384	79973	425
+    #         주식당일거래원: JP모간서울	1184351	+314738	033	DHDB	한  화	1038978	+24113	021	!!!!	이베스트	944407	+514	063	!!!! .....
+    #         장시작시간 : 8	888888	000000
+    #         장시작시간 : 2	152700	000300
+    #     :param sCode:
+    #     :param sRealType:
+    #     :param sRealData:
+    #     :return:
+    #     """
+    #     print('sCode', sCode)
+    #     print('sRealType', sRealType)
+    #     print('sRealData', sRealData)
+    #
+    #     if sRealType == '주식체결':
+    #         user_signal = pyqtSignal()
+    #         if self.realtimeWindow:
+    #             user_signal.emit(self.realtimeWindow.user_slot)
+    #         pass
 
-    """
-        :param sRealType: 주식예상체결, 장시작시간, 주식우선호가, 주식당일거래원
-        :param sRealData : 
-            주식우선호가: +79900	+79800
-            주식예상체결: sRealData 152707	+79900	+200	+0.25	--212	715156	2
-            주식체결: 153028	+79800	+100	+0.13	+79900	+79800	 774560	9700742	775794	+80000	+80200	+79800	2	-67366	-3348496884	-99.31	0.16	208	70.86	4763886	2	0	-99.57	000000	000000	10022	090008	094034	153028	5101149	3614467	-41.47	46716	28239	 61809888	 0	 0	 0	7980	6384	79973	425
-            주식당일거래원: JP모간서울	1184351	+314738	033	DHDB	한  화	1038978	+24113	021	!!!!	이베스트	944407	+514	063	!!!! .....
-            장시작시간 : 8	888888	000000
-            장시작시간 : 2	152700	000300
-    """
-    def E_OnReceiveRealData(self, sCode, sRealType, sRealData):
-        print('sCode', sCode)
-        print('sRealType', sRealType)
-        print('sRealData', sRealData)
 
-
-    def calculator(self):
-        print('calculator start')
-        kosdaq_list = self.get_code_list_by_market("10")
-
-        self.day_kiwoom_db(900300)
-
-        # for idx, stock_code in enumerate(kosdaq_list):
-        #     self.dynamicCall("DisconnectRealData(QString)",
-        #                      self.screen_calculation_stock)
-        #
-        #     print(
-        #         f"{idx + 1} / {len(kosdaq_list)} : KOSDAQ Stock Code : {stock_code} is updating...")
-        #     self.day_kiwoom_db(stock_code)
+    # def calculator(self):
+    #     print('calculator start')
+    #     kosdaq_list = self.get_code_list_by_market("10")
+    #
+    #     self.day_kiwoom_db(900300)
+    #
+    #     # for idx, stock_code in enumerate(kosdaq_list):
+    #     #     self.dynamicCall("DisconnectRealData(QString)",
+    #     #                      self.screen_calculation_stock)
+    #     #
+    #     #     print(
+    #     #         f"{idx + 1} / {len(kosdaq_list)} : KOSDAQ Stock Code : {stock_code} is updating...")
+    #     #     self.day_kiwoom_db(stock_code)
 
     def day_kiwoom_db(self, stock_code=None, date=None, nPrevNext=0):
         print('day_kiwoom_db start')
@@ -519,5 +589,5 @@ class Kiwoom(QAxWidget):
         #
         # self.comm_rq_data("주식일봉차트조회요청", "opt10081", nPrevNext, self.screen_calculation_stock)
         #
-        # if not self.calculator_event_loop.isRunning():
-        #     self.calculator_event_loop.exec_()
+        # if not self.tr_event_loop.isRunning():
+        #     self.tr_event_loop.exec_()

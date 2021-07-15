@@ -5,10 +5,8 @@ from PyQt5.QAxContainer import *
 from PyQt5.QtCore import QEventLoop
 from beautifultable import BeautifulTable
 
-import re
-from connMysql import Mysql
-from utils.trie import Trie
-from kiwoom.config.kiwoom import output_list
+from kiwoom.worker import Worker
+
 form_class = uic.loadUiType("ui/kiwoom/condition.search.ui")[0]
 
 # referer : https://kminito.tistory.com/36
@@ -26,33 +24,50 @@ class ConditionSearchWindow(QWidget, form_class):
     def __init__(self, kiwoom=None):
         super().__init__()
         self.kiwoom = kiwoom
-        self.isLogin = kiwoom.dynamicCall("GetConnectState()")
+        self.isLogin = kiwoom.is_login()
         self.setupUi(self)  # 현재 form_class를 선택한다.
-        # self.listWidget.itemClicked.connect(self.chkItemClicked)
-        self.listWidget.itemDoubleClicked.connect(self.chkItemClicked)
+        # self.listWidget.itemClicked.connect(self.condition_item_clicked)
+        self.listWidget.itemDoubleClicked.connect(self.condition_item_clicked)
 
         # 이벤트 루프 관련 변수
         self.condition_serarch_event_loop = QEventLoop()  # 조건검색 이벤트 루프
-        self.OnReceiveTrCondition.connect(self.receiveTrCondition)
-        self.OnReceiveRealCondition.connect(self.receiveRealCondition)
+        # self.OnReceiveTrCondition.connect(self.receiveTrCondition)
+        # self.OnReceiveRealCondition.connect(self.receiveRealCondition)
 
         # 조건검색식 관련 (GetConditionLoad())
-        self.kiwoom.OnReceiveConditionVer.connect(self.E_OnReceiveConditionVer)
+        self.worker = Worker()
+        self.worker.signal_receive_tr_condition.connect(self.signal_slot)
+        self.worker.signal_receive_condition_ver.connect(self.signal_ver)
+        self.worker.signal_receive_real_condition.connect(self.signal_slot)
+
+        # self.kiwoom.OnReceiveConditionVer.connect(self.E_OnReceiveConditionVer)
 
         # self.mysql = Mysql()
         # self.condition = ''
-        self.getConditionLoad()
+        self.condition_load()
+    def signal_slot(self):
+        pass
 
-    def getConditionLoad(self):
-        print("[getConditionLoad]")
-        """ 조건식 목록 요청 메서드 """
+    def signal_ver(self, receive, msg):
+        print('signal_ver', receive, msg)
 
-        isLoad = self.kiwoom.dynamicCall("GetConditionLoad()")
-        # 요청 실패시
-        if not isLoad:
-            print("getConditionLoad(): 조건식 요청 실패")
 
-    def chkItemClicked(self):
+    def condition_load(self):
+        """
+        조건식 목록 요청 메서드
+        :return:
+        """
+        if self.isLogin != 1:
+            QMessageBox.about(self, 'Alert', "먼저 로그인 해 주세요")
+            pass
+        else:
+            isLoad = self.kiwoom.dynamicCall("GetConditionLoad()")
+            # 요청 실패시
+            if not isLoad:
+                QMessageBox.about(self, 'Alert', "조건식 요청 실패")
+
+
+    def condition_item_clicked(self):
         print('chkItemClicked')
         print(str(self.listWidget.currentRow()) + " : " + self.listWidget.currentItem().text())
         text = self.listWidget.currentItem().text()
@@ -69,7 +84,7 @@ class ConditionSearchWindow(QWidget, form_class):
         int conditionIndex,     // 조건명 인덱스
         int isRealTime   // 조회구분, 0:조건검색, 1:실시간 조건검색
     """
-    def sendCondition(self, screenNo, conditionName, conditionIndex, isRealTime):
+    def sendCondition(self, screen_no, condition_name, condition_index, is_realtime):
         print("[sendCondition]")
         """
         종목 조건검색 요청 메서드
@@ -82,21 +97,22 @@ class ConditionSearchWindow(QWidget, form_class):
         1회성 조회의 경우, receiveTrCondition() 이벤트로 결과값이 전달되며
         실시간 조회의 경우, receiveTrCondition()과 receiveRealCondition() 이벤트로 결과값이 전달된다.
 
-        :param screenNo: string
-        :param conditionName: string - 조건식 이름
-        :param conditionIndex: int - 조건식 인덱스
-        :param isRealTime: int - 조건검색 조회구분(0: 1회성 조회, 1: 실시간 조회)
+        :param screen_no:
+        :type screen_no: string
+        :param condition_name: string - 조건식 이름
+        :param condition_index: int - 조건식 인덱스
+        :param is_realtime: int - 조건검색 조회구분(0: 1회성 조회, 1: 실시간 조회)
         """
 
         isRequest = self.kiwoom.dynamicCall("SendCondition(QString, QString, int, int",
-                                     screenNo, conditionName, conditionIndex, isRealTime)
+                                     screen_no, condition_name, condition_index, is_realtime)
 
         if not isRequest:
             print("sendCondition(): 조건검색 요청 실패")
 
-        receiveTrCondition() # 이벤트 메서드에서 루프 종료
-
+        self.receiveTrCondition() # 이벤트 메서드에서 루프 종료
         self.condition_serarch_event_loop.exec_()
+
 
     def sendConditionStop(self, screenNo, conditionName, conditionIndex):
         print("[sendConditionStop]")
@@ -104,31 +120,26 @@ class ConditionSearchWindow(QWidget, form_class):
 
         self.kiwoom.dynamicCall("SendConditionStop(QString, QString, int)", screenNo, conditionName, conditionIndex)
 
-    """
-        getConditionLoad() 메서드의 조건식 목록 요청에 대한 응답 이벤트
 
-        :param receive: int - 응답결과(1: 성공, 나머지 실패)
-        :param msg: string - 메세지
-    """
 
-    def E_OnReceiveConditionVer(self, receive, msg):
-        try:
-            if not receive:
-                return
-
-            self.condition = self.getConditionNameList()
-            print("조건식 개수: ", len(self.condition))
-
-            for key in self.condition.keys():
-                print("조건식: ", key, ": ", self.condition[key])
-                self.listWidget.addItem(self.condition[key])
-
-        except Exception as e:
-            print(e)
-
-        finally:
-            self.condition_serarch_event_loop.exit()
-        # pass
+    # def E_OnReceiveConditionVer(self, receive, msg):
+    #     try:
+    #         if not receive:
+    #             return
+    #
+    #         self.condition = self.getConditionNameList()
+    #         print("조건식 개수: ", len(self.condition))
+    #
+    #         for key in self.condition.keys():
+    #             print("조건식: ", key, ": ", self.condition[key])
+    #             self.listWidget.addItem(self.condition[key])
+    #
+    #     except Exception as e:
+    #         print(e)
+    #
+    #     finally:
+    #         self.condition_serarch_event_loop.exit()
+    #     # pass
 
     def getConditionNameList(self):
         print("[getConditionNameList]")
@@ -157,43 +168,43 @@ class ConditionSearchWindow(QWidget, form_class):
 
         return conditionDictionary
 
-    def receiveTrCondition(self, screenNo, codes, conditionName, conditionIndex, inquiry):
-        """
-        (1회성, 실시간) 종목 조건검색 요청시 발생되는 이벤트
+    # def receiveTrCondition(self, screenNo, codes, conditionName, conditionIndex, inquiry):
+    #     """
+    #     (1회성, 실시간) 종목 조건검색 요청시 발생되는 이벤트
+    #
+    #     :param screenNo: string
+    #     :param codes: string - 종목코드 목록(각 종목은 세미콜론으로 구분됨)
+    #     :param conditionName: string - 조건식 이름
+    #     :param conditionIndex: int - 조건식 인덱스
+    #     :param inquiry: int - 조회구분(0: 남은데이터 없음, 2: 남은데이터 있음)
+    #     """
+    #
+    #     print("[receiveTrCondition]")
+    #     try:
+    #         if codes == "":
+    #             return
+    #
+    #         codeList = codes.split(';')
+    #         del codeList[-1]
+    #
+    #         print(codeList)
+    #         print("종목개수: ", len(codeList))
+    #
+    #     finally:
+    #         self.conditionLoop.exit()
 
-        :param screenNo: string
-        :param codes: string - 종목코드 목록(각 종목은 세미콜론으로 구분됨)
-        :param conditionName: string - 조건식 이름
-        :param conditionIndex: int - 조건식 인덱스
-        :param inquiry: int - 조회구분(0: 남은데이터 없음, 2: 남은데이터 있음)
-        """
-
-        print("[receiveTrCondition]")
-        try:
-            if codes == "":
-                return
-
-            codeList = codes.split(';')
-            del codeList[-1]
-
-            print(codeList)
-            print("종목개수: ", len(codeList))
-
-        finally:
-            self.conditionLoop.exit()
-
-
-
-    def receiveRealCondition(self, code, event, conditionName, conditionIndex):
-        print("[receiveRealCondition]")
-        """
-        실시간 종목 조건검색 요청시 발생되는 이벤트
-
-        :param code: string - 종목코드
-        :param event: string - 이벤트종류("I": 종목편입, "D": 종목이탈)
-        :param conditionName: string - 조건식 이름
-        :param conditionIndex: string - 조건식 인덱스(여기서만 인덱스가 string 타입으로 전달됨)
-        """
-
-        print("종목코드: {}, 종목명: {}".format(code, self.get_master_code_name(code)))
-        print("이벤트: ", "종목편입" if event == "I" else "종목이탈")
+    #
+    #
+    # def receiveRealCondition(self, code, event, conditionName, conditionIndex):
+    #     print("[receiveRealCondition]")
+    #     """
+    #     실시간 종목 조건검색 요청시 발생되는 이벤트
+    #
+    #     :param code: string - 종목코드
+    #     :param event: string - 이벤트종류("I": 종목편입, "D": 종목이탈)
+    #     :param conditionName: string - 조건식 이름
+    #     :param conditionIndex: string - 조건식 인덱스(여기서만 인덱스가 string 타입으로 전달됨)
+    #     """
+    #
+    #     print("종목코드: {}, 종목명: {}".format(code, self.get_master_code_name(code)))
+    #     print("이벤트: ", "종목편입" if event == "I" else "종목이탈")
