@@ -7,7 +7,9 @@ from kiwoom.win_account_balance_info import AccountBalanceInfoWindow
 from kiwoom.win_uncontract_info import UncontractInfoWindow
 from kiwoom.win_realtime import RealtimeWindow
 from kiwoom.win_condition_search import ConditionSearchWindow
+from kiwoom.win_trader import TraderWindow
 from kiwoom.win_order import OrderWindow
+
 from kiwoom.worker import Worker
 
 
@@ -103,9 +105,9 @@ class Kiwoom(QAxWidget):
         # 실시간으로 데이타 조회
         self.OnReceiveRealData.connect(self.worker.on_receive_real_data)  # 실시간 데이타 처리시
 
-        # # 조건검색식 관련
-        self.OnReceiveTrCondition.connect(self.worker.on_receive_tr_condition)
-        self.OnReceiveConditionVer.connect(self.worker.on_receive_condition_ver)
+        # # # 조건검색식 관련
+        # self.OnReceiveTrCondition.connect(self.worker.on_receive_tr_condition)
+        # self.OnReceiveConditionVer.connect(self.worker.on_receive_condition_ver)
 
     def login(self):
         """
@@ -293,7 +295,14 @@ class Kiwoom(QAxWidget):
         """
         self.conditionSearchWindow = ConditionSearchWindow(self)
         self.conditionSearchWindow.show()
-        pass
+
+    def trader(self):
+        """
+        조건식을 이용한 tracer 창
+        :return:
+        """
+        self.traderhWindow = TraderWindow(self)
+        self.traderhWindow.show()
 
     def order(self):
         """
@@ -591,3 +600,32 @@ class Kiwoom(QAxWidget):
         #
         # if not self.tr_event_loop.isRunning():
         #     self.tr_event_loop.exec_()
+
+
+    def getConditionNameList(self):
+        print("[getConditionNameList]")
+        """
+        조건식 획득 메서드
+
+        조건식을 딕셔너리 형태로 반환합니다.
+        이 메서드는 반드시 receiveConditionVer() 이벤트 메서드안에서 사용해야 합니다.
+
+        :return: dict - {인덱스:조건명, 인덱스:조건명, ...}
+        """
+
+        data = self.dynamicCall("GetConditionNameList()")
+
+        if data == "":
+            print("getConditionNameList(): 사용자 조건식이 없습니다.")
+
+
+        conditionList = data.split(';')
+        del conditionList[-1]
+
+        conditionDictionary = {}
+
+        for condition in conditionList:
+            key, value = condition.split('^')
+            conditionDictionary[int(key)] = value
+
+        return conditionDictionary

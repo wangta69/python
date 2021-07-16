@@ -33,7 +33,9 @@ class MainWindow(QMainWindow, form_class):
         self.unContractedInfoAction.triggered.connect(self.kiwoom.uncontract_info)
         self.realtimeDataAction.triggered.connect(self.kiwoom.realtime)
         self.conditionSearchAction.triggered.connect(self.kiwoom.conditionSearch)
+        self.traderAction.triggered.connect(self.kiwoom.trader)
         self.kiwoomTestaction.triggered.connect(self.kiwoom.order)
+
 
         # 자료
         self.foreignerPlatformAction.triggered.connect(self.foreigner.info)

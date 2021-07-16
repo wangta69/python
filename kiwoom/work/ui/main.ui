@@ -36,6 +36,7 @@
     <addaction name="unContractedInfoAction"/>
     <addaction name="realtimeDataAction"/>
     <addaction name="conditionSearchAction"/>
+    <addaction name="traderAction"/>
     <addaction name="kiwoomTestaction"/>
    </widget>
    <widget class="QMenu" name="menuStockInfo">
@@ -138,6 +139,11 @@
   <action name="kiwoomTestaction">
    <property name="text">
     <string>주문테스트</string>
+   </property>
+  </action>
+  <action name="traderAction">
+   <property name="text">
+    <string>트레이더</string>
    </property>
   </action>
  </widget>

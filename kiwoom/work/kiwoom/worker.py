@@ -3,12 +3,20 @@ from .config.errCode import errors
 
 
 class Worker(QObject):
+    signal_test = pyqtSignal()
     signal_login = pyqtSignal()
     signal_on_receive_real_data = pyqtSignal(str, str, str)
     signal_on_receive_tr_data = pyqtSignal(str, str, str, str, str)
-    signal_receive_tr_condition = pyqtSignal(str, str)
-    signal_receive_condition_ver = pyqtSignal()
-    signal_receive_real_condition = pyqtSignal()
+
+    signal_receive_condition_ver = pyqtSignal(int, str)
+    signal_receive_tr_condition = pyqtSignal(str, str, str, int, int)
+    signal_receive_real_condition = pyqtSignal(str, str, str, str)
+
+
+    def test(self):
+        print('signal_test')
+        self.signal_test.emit()
+
 
     # noinspection PyMethodMayBeStatic
     def on_receive_message(self, src_no, rq_name, tr_code, msg):
@@ -75,6 +83,16 @@ class Worker(QObject):
             print('sRealData', real_data)
             self.signal_on_receive_real_data.emit(tr_code, real_type, real_data)
 
+    # 조건검색 관련시작
+    def on_receive_condition_ver(self, receive, msg):
+        """
+        getConditionLoad() 메서드의 조건식 목록 요청에 대한 응답 이벤트
+
+        :param receive: int - 응답결과(1: 성공, 나머지 실패)
+        :param msg: string - 메세지
+        """
+        self.signal_receive_condition_ver.emit(receive, msg)
+
     def on_receive_tr_condition(self, screen_no, codes, condition_name, condition_index, inquiry):
         """
         (1회성, 실시간) 종목 조건검색 요청시 발생되는 이벤트
@@ -90,49 +108,12 @@ class Worker(QObject):
         :return:
         """
         print('on_receive_tr_condition', screen_no, codes, condition_name, condition_index, inquiry)
-        try:
-            if codes == "":
-                return
 
-            codeList = codes.split(';')
-            del codeList[-1]
-
-            print(codeList)
-            print("종목개수: ", len(codeList))
-
-        finally:
-            self.conditionLoop.exit()
-
-    def on_receive_condition_ver(self, receive, msg):
-        """
-        getConditionLoad() 메서드의 조건식 목록 요청에 대한 응답 이벤트
-
-        :param receive: int - 응답결과(1: 성공, 나머지 실패)
-        :param msg: string - 메세지
-        """
-        print('on_receive_condition_ver', receive, msg)
-        try:
-            if not receive:
-                return
-
-            self.condition = self.getConditionNameList()
-            print("조건식 개수: ", len(self.condition))
-
-            for key in self.condition.keys():
-                print("조건식: ", key, ": ", self.condition[key])
-                self.listWidget.addItem(self.condition[key])
-
-        except Exception as e:
-            print(e)
-
-        finally:
-            self.signal_receive_condition_ver.emit(receive, msg)
-            # self.condition_serarch_event_loop.exit()
-
+        self.signal_receive_tr_condition.emit(screen_no, codes, condition_name, condition_index, inquiry)
+        # self.conditionLoop.exit()
 
     def receive_real_condition(self, code, event, condition_name, condition_index):
         """
-
         실시간 종목 조건검색 요청시 발생되는 이벤트
         :param code: string - 종목코드
         :param event: string - 이벤트종류("I": 종목편입, "D": 종목이탈)
@@ -140,6 +121,5 @@ class Worker(QObject):
         :param condition_index: string - 조건식 인덱스(여기서만 인덱스가 string 타입으로 전달됨)
         :return:
         """
-        print('receive_real_condition', code, event, condition_name, condition_index)
-        print("종목코드: {}, 종목명: {}".format(code, self.get_master_code_name(code)))
-        print("이벤트: ", "종목편입" if event == "I" else "종목이탈")
+        self.signal_receive_real_condition.emit(code, event, condition_name, condition_index)
+    # 조건검색 관련 끝

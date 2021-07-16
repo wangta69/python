@@ -14,7 +14,7 @@ class OrderWindow(QWidget, form_class):
 
         self.lineEdit.textChanged.connect(self.code_changed)
 
-        self.isLogin = kiwoom.dynamicCall("GetConnectState()")
+        self.isLogin = kiwoom.is_login()
         if self.isLogin != 1:
             QMessageBox.about(self, 'Alert', "먼저 로그인 해 주세요")
             pass
