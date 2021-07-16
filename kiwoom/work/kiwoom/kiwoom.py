@@ -143,6 +143,7 @@ class Kiwoom(QAxWidget):
 
     def comm_rq_data(self, rq_name, tr_code, next_no, screen_no):
         """
+        self.OnReceiveTrData.connect(self.worker.on_receive_tr_data)
         :param rq_name:
         :param tr_code:
         :param next_no:
@@ -179,6 +180,51 @@ class Kiwoom(QAxWidget):
 
     def cancel_screen_number(self, scr_no):
         self.dynamicCall("DisconnectRealData(QString)", scr_no)
+
+    def send_order(self, rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no):
+        self.dynamicCall("SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+                         [rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no])
+
+    def get_chejan_data(self, fid):
+        ret = self.dynamicCall("GetChejanData(int)", fid)
+        return ret
+
+    def send_condition(self, screen_no, condition_name, condition_index, is_realtime):
+        print("[sendCondition]")
+        """
+        종목 조건검색 요청 메서드
+
+        이 메서드로 얻고자 하는 것은 해당 조건에 맞는 종목코드이다.
+        해당 종목에 대한 상세정보는 setRealReg() 메서드로 요청할 수 있다.
+        요청이 실패하는 경우는, 해당 조건식이 없거나, 조건명과 인덱스가 맞지 않거나, 조회 횟수를 초과하는 경우 발생한다.
+
+        조건검색에 대한 결과는
+        1회성 조회의 경우, receiveTrCondition() 이벤트로 결과값이 전달되며
+        실시간 조회의 경우, receiveTrCondition()과 receiveRealCondition() 이벤트로 결과값이 전달된다.
+
+        :param screen_no: 화면번호
+        :type screen_no: string
+        :param condition_name: string - 조건식 이름
+        :param condition_index: int - 조건식 인덱스
+        :param is_realtime: int - 조건검색 조회구분(0: 1회성 조회, 1: 실시간 조회)
+        """
+
+        isRequest = self.dynamicCall("SendCondition(QString, QString, int, int",
+                                     screen_no, condition_name, condition_index, is_realtime)
+
+        if not isRequest:
+            print("sendCondition(): 조건검색 요청 실패")
+
+        # self.receiveTrCondition() # 이벤트 메서드에서 루프 종료
+        # self.condition_serarch_event_loop.exec_()
+
+
+    def send_condition_stop(self, screen_no, condition_name, condition_index):
+        print("[sendConditionStop]")
+        """ 
+            종목 조건검색 중지 메서드 
+        """
+        self.dynamicCall("SendConditionStop(QString, QString, int)", screen_no, condition_name, condition_index)
 
     #
     # def get_account_number(self):

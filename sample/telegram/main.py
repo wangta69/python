@@ -21,5 +21,5 @@ class TelegramClass():
 
 if __name__ == '__main__':
     telegram_class = TelegramClass()
-    telegram_class.send_message('PyCharm')
+    telegram_class.send_message('Hellow')
 

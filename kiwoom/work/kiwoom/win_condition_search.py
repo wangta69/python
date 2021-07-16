@@ -2,7 +2,6 @@ from PyQt5.QtCore import QEventLoop
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5 import uic
 
-
 from kiwoom.worker import Worker
 
 form_class = uic.loadUiType("ui/kiwoom/condition.search.ui")[0]
@@ -150,49 +149,9 @@ class ConditionSearchWindow(QWidget, form_class):
         reverse_dic = dict(map(reversed, self.condition.items()))
         conditionIndex = reverse_dic[text]
         print('====', text, conditionIndex)
-        self.sendCondition('0', text, conditionIndex, 1)
-
-    """
-        BSTR screenNo,    // 화면번호
-        BSTR conditionName,  // 조건식 이름
-        int conditionIndex,     // 조건명 인덱스
-        int isRealTime   // 조회구분, 0:조건검색, 1:실시간 조건검색
-    """
-    def sendCondition(self, screen_no, condition_name, condition_index, is_realtime):
-        print("[sendCondition]")
-        """
-        종목 조건검색 요청 메서드
-
-        이 메서드로 얻고자 하는 것은 해당 조건에 맞는 종목코드이다.
-        해당 종목에 대한 상세정보는 setRealReg() 메서드로 요청할 수 있다.
-        요청이 실패하는 경우는, 해당 조건식이 없거나, 조건명과 인덱스가 맞지 않거나, 조회 횟수를 초과하는 경우 발생한다.
-
-        조건검색에 대한 결과는
-        1회성 조회의 경우, receiveTrCondition() 이벤트로 결과값이 전달되며
-        실시간 조회의 경우, receiveTrCondition()과 receiveRealCondition() 이벤트로 결과값이 전달된다.
-
-        :param screen_no:
-        :type screen_no: string
-        :param condition_name: string - 조건식 이름
-        :param condition_index: int - 조건식 인덱스
-        :param is_realtime: int - 조건검색 조회구분(0: 1회성 조회, 1: 실시간 조회)
-        """
-
-        isRequest = self.kiwoom.dynamicCall("SendCondition(QString, QString, int, int",
-                                     screen_no, condition_name, condition_index, is_realtime)
-
-        if not isRequest:
-            print("sendCondition(): 조건검색 요청 실패")
-
-        # self.receiveTrCondition() # 이벤트 메서드에서 루프 종료
-        # self.condition_serarch_event_loop.exec_()
+        self.kiwoom.send_condition('0', text, conditionIndex, 1)
 
 
-    def sendConditionStop(self, screenNo, conditionName, conditionIndex):
-        print("[sendConditionStop]")
-        """ 종목 조건검색 중지 메서드 """
-
-        self.kiwoom.dynamicCall("SendConditionStop(QString, QString, int)", screenNo, conditionName, conditionIndex)
 
 
 

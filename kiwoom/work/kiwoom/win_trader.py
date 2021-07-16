@@ -1,7 +1,10 @@
+import os
 from PyQt5.QtCore import QEventLoop, QTimer, QTime
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5 import uic
+from dotenv import load_dotenv
 from kiwoom.worker import Worker
+from utils.telegram import Telegram
 
 form_class = uic.loadUiType("ui/kiwoom/trader.ui")[0]
 
@@ -17,15 +20,29 @@ class TraderWindow(QWidget, form_class):
         self.timer.start(500)
         self.timer.timeout.connect(self.timeout)
 
+        # 테레그램 세팅
+        load_dotenv()
+        self.sns_message = ""
+        self.token = os.getenv('TELEGRAM_BOT_TOKEN')
+        self.chat_id = os.getenv('TELEGRAM_BOT_CHAT_ID')
+        self.telegram = Telegram()
+
         # 조건검색식 관련 (GetConditionLoad())
         self.worker = Worker()
         self.worker.signal_receive_condition_ver.connect(self.signal_ver)
         self.worker.signal_receive_tr_condition.connect(self.signal_tr)  # 1회성
         self.worker.signal_receive_real_condition.connect(self.signal_real)  # 실시간
+
         # # 조건검색식 관련
         self.kiwoom.OnReceiveConditionVer.connect(self.worker.on_receive_condition_ver)
         self.kiwoom.OnReceiveTrCondition.connect(self.worker.on_receive_tr_condition)
         self.kiwoom.OnReceiveRealCondition.connect(self.worker.receive_real_condition)
+
+        # ui 관련 처리
+        self.checkBox_cond.setChecked(True)
+        self.pushButton_cond.clicked.connect(self.start_cond)
+        self.lineEdit.textChanged.connect(self.code_changed)
+        self.pushButton.clicked.connect(self.send_order)
 
         self.init()
 
@@ -40,14 +57,8 @@ class TraderWindow(QWidget, form_class):
             accounts_list = accounts.split(';')[0:accouns_num]
             self.comboBox.addItems(accounts_list)
 
-            self.lineEdit.textChanged.connect(self.code_changed)
-            self.pushButton.clicked.connect(self.send_order)
-
-            ## 조건검색식 관련 추가
+            # 조건검색식 호출
             self.condition_load()
-            self.checkBox_cond.setChecked(True)
-            self.pushButton_cond.clicked.connect(self.start_cond)
-
 
     def code_changed(self):
         code = self.lineEdit.text()
@@ -66,6 +77,9 @@ class TraderWindow(QWidget, form_class):
         num = self.spinBox.value()
         price = self.spinBox_2.value()
 
+        print("send_order_req", "0101", account, order_type_lookup[order_type], code, num, price,
+                                hoga_lookup[hoga], "")
+
         # self.kiwoom.send_order("send_order_req", "0101", account, order_type_lookup[order_type], code, num, price,
         #                        hoga_lookup[hoga], "")
 
@@ -74,20 +88,20 @@ class TraderWindow(QWidget, form_class):
         text_time = current_time.toString("hh:mm:ss")
         time_msg = "현재시간: " + text_time
 
-        state = self.kiwoom.is_login()
-        if state == 1:
-            state_msg = "서버 연결 중"
-        else:
-            state_msg = "서버 미 연결 중"
+        # state = self.kiwoom.is_login()
+        # if state == 1:
+        #     state_msg = "서버 연결 중"
+        # else:
+        #     state_msg = "서버 미 연결 중"
 
         # self.statusbar.showMessage(state_msg + " | " + time_msg)
 
-        if self.kiwoom.msg:
-            # 텔레그램
-            if self.checkBox_cond.isChecked():
-                self.kiwoom.bot.sendMessage(chat_id=self.kiwoom.chat_id, text=self.kiwoom.msg)
-            self.textEdit_cond.append(self.kiwoom.msg)
-            self.kiwoom.msg = ""
+        # if self.sns_message:
+        #     # 텔레그램
+        #     if self.checkBox_cond.isChecked():
+        #         self.telegram.send_message(self.sns_message)
+        #     self.textEdit_cond.append(self.sns_message)
+        #     self.sns_message = ""
 
     def signal_ver(self, receive, msg):
         """
@@ -96,7 +110,7 @@ class TraderWindow(QWidget, form_class):
         :param receive: int - 응답결과(1: 성공, 나머지 실패)
         :param msg: string - 메세지
         """
-
+        print('signal_ver', receive, msg)
         cond_list = []
         try:
             if not receive:
@@ -104,10 +118,12 @@ class TraderWindow(QWidget, form_class):
                 return
 
             dic = self.kiwoom.getConditionNameList()
+            print('dic', dic)
 
-            for key in self.dic.keys():
+            for key in dic.keys():
+                print('key', key)
                 cond_list.append("{};{}".format(key, dic[key]))
-
+            print('cond_list', cond_list)
             # 콤보박스에 조건식 목록 추가
             self.comboBox_cond.addItems(cond_list)
 
@@ -115,7 +131,7 @@ class TraderWindow(QWidget, form_class):
             print(e)
 
         finally:
-            print('finally')
+            print('signal_ver finally')
             # pass
             # self.condition_serarch_event_loop.exit()
 
@@ -145,6 +161,12 @@ class TraderWindow(QWidget, form_class):
             print(codeList)
             print("종목개수: ", len(codeList))
 
+            # 로그용
+            msg = ""
+            for code in codeList:
+                msg += "{} {}\n".format(code, self.kiwoom.get_master_code_name(code))
+
+            self.sns_message += msg
         finally:
             pass
 
@@ -163,6 +185,8 @@ class TraderWindow(QWidget, form_class):
         print('receive_real_condition', code, event, condition_name, condition_index)
         print("종목코드: {}, 종목명: {}".format(code, self.kiwoom.get_master_code_name(code)))
         print("이벤트: ", "종목편입" if event == "I" else "종목이탈")
+        msg = "{} {} {}\n".format("종목편입" if event == "I" else "종목이탈", code, self.kiwoom.get_master_code_name(code))
+        self.sns_message += msg
 
     ## 조건검색식 관련 추가
     def condition_load(self):
@@ -175,23 +199,31 @@ class TraderWindow(QWidget, form_class):
         self.kiwoom.dynamicCall("GetConditionLoad()")
 
     def start_cond(self):
-        conditionIndex = self.comboBox_cond.currentText().split(';')[0]
-        conditionName = self.comboBox_cond.currentText().split(';')[1]
+        condition_name = self.comboBox_cond.currentText().split(';')[1]
+        condition_index = self.comboBox_cond.currentText().split(';')[0]
 
         if self.pushButton_cond.text() == "적용":
 
             try:
-                self.kiwoom.sendCondition("0", conditionName, int(conditionIndex), 1)
+                self.kiwoom.send_condition("0", condition_name, int(condition_index), 1)
                 self.pushButton_cond.setText("해제")
                 self.comboBox_cond.setEnabled(False)
                 self.checkBox_cond.setEnabled(False)
-                print("{} activated".format(conditionName))
-
+                print("{} activated".format(condition_name))
+                msg = "{} 실행\n".format(condition_name)
+                self.sns_message += msg
             except Exception as e:
                 print(e)
 
         else:
-            self.kiwoom.sendConditionStop("0", conditionName, conditionIndex)
+            self.sendConditionStop("0", condition_name, condition_index)
             self.pushButton_cond.setText("적용")
             self.comboBox_cond.setEnabled(True)
             self.checkBox_cond.setEnabled(True)
+
+    def sendConditionStop(self, screen_no, condition_name, condition_index):
+        self.kiwoom.send_condition_stop(screen_no, condition_name, condition_index)
+
+        msg = "{} 중지\n".format(condition_name)
+        self.sns_message += msg
+

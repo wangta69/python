@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 from .config.errCode import errors
 
-
+# referer : https://wikidocs.net/2878
 class Worker(QObject):
     signal_test = pyqtSignal()
     signal_login = pyqtSignal()
@@ -50,14 +50,16 @@ class Worker(QObject):
 
     # noinspection PyMethodMayBeStatic
     def on_receive_tr_data(self, src_no, rq_name, tr_code, record_name, prev_next):
+        print('on_receive_tr_data', rq_name)
         """
-         :param src_no:
-         :type src_no: str
-         :type rq_name: str
-         :type tr_code: str
-         :type record_name: str
-         :type prev_next: str
-         """
+        CommRqData 로 호출시 on_receive_tr_data 로 전송 받음
+        :param src_no:
+        :type src_no: str
+        :type rq_name: str
+        :type tr_code: str
+        :type record_name: str
+        :type prev_next: str
+        """
         self.signal_on_receive_tr_data.emit(src_no, rq_name, tr_code, record_name, prev_next)
 
     # noinspection PyMethodMayBeStatic

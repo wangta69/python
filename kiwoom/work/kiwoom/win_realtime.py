@@ -18,7 +18,8 @@ class RealtimeWindow(QWidget, form_class):
         self.isLogin = kiwoom.is_login()
         self.setupUi(self)  # 현재 form_class를 선택한다.
 
-        self.lineEdit.textEdited.connect(self.line_edit_text_changed)
+        # self.lineEdit.textEdited.connect(self.line_edit_text_changed)
+        self.lineEdit.textChanged.connect(self.line_edit_text_changed)
         self.listView.clicked.connect(self.listview_item_clicked)
         self.realtimeData.clicked.connect(self.realtime_data_clicked)
 

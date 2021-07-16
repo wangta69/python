@@ -1,10 +1,14 @@
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5 import uic
 from PyQt5.QtCore import QEventLoop
-form_class = uic.loadUiType("ui/kiwoom/main.ui")[0]
-import time
 
-## referer : https://wikidocs.net/5931
+import time
+from kiwoom.worker import Worker
+
+form_class = uic.loadUiType("ui/kiwoom/main.ui")[0]
+
+## referer : https://wikidocs.net/
+
 class OrderWindow(QWidget, form_class):
 
     def __init__(self, kiwoom=None):
@@ -26,6 +30,38 @@ class OrderWindow(QWidget, form_class):
         self.pushButtonSetOrder.clicked.connect(self.send_order)
         self.buttonCheckBalance.clicked.connect(self.check_balance)
 
+        # 이벤트 루프 관련 변수
+        self.tr_event_loop = QEventLoop()
+
+        self.worker = Worker()
+        self.worker.signal_on_receive_tr_data.connect(self.signal_tr_data)
+        self.kiwoom.OnReceiveTrData.connect(self.signal_tr_data)
+
+
+    def signal_tr_data(self, src_no, rq_name, tr_code, record_name, prev_next):
+        pass
+        #
+        # print('signal_tr_data', self, src_no, rq_name, tr_code, record_name, prev_next)
+        # if prev_next == '2':
+        #     self.remained_data = True
+        # else:
+        #     self.remained_data = False
+        #
+        # if prev_next == "2":
+        #     self.kiwoom.set_input_value("계좌번호", self.kiwoom.account_number)
+        #     self.kiwoom.comm_rq_data("계좌평가잔고내역요청", "opw00018", 0, "2000")
+        # else:
+        #     self.tr_event_loop.exit()
+
+
+        # if rq_name == "예수금상세현황요청":
+        #     self.onreceive_tr_data_withholdings(tr_code, rq_name)
+        # elif rq_name == "계좌평가잔고내역요청":
+        #     self.onreceive_tr_data_account_evaluation_balance(tr_code, rq_name, prev_next)
+        # elif rq_name == "실시간미체결요청":
+        #     self.onreceive_tr_data_realtime_pending(src_no, tr_code, rq_name, prev_next)
+        # elif rq_name == "주식일봉차트조회요청":
+        #     self.onreceive_tr_data_daily_stock_chart(tr_code, rq_name, prev_next)
 
     def set_account_combo(self):
         accouns_num = int(self.kiwoom.get_login_info("ACCOUNT_CNT"))
@@ -81,19 +117,19 @@ class OrderWindow(QWidget, form_class):
         ret = self.kiwoom.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
         return ret
 
-    def _receive_tr_data(self, screen_no, rqname, trcode, record_name, next, unused1, unused2, unused3, unused4):
-        if next == '2':
-            self.remained_data = True
-        else:
-            self.remained_data = False
-
-        if rqname == "opt10081_req":
-            self._opt10081(rqname, trcode)
-
-        try:
-            self.tr_event_loop.exit()
-        except AttributeError:
-            pass
+    # def _receive_tr_data(self, screen_no, rqname, trcode, record_name, next, unused1, unused2, unused3, unused4):
+    #     if next == '2':
+    #         self.remained_data = True
+    #     else:
+    #         self.remained_data = False
+    #
+    #     if rqname == "계좌평가잔고내역요청":
+    #         self._opt10081(rqname, trcode)
+    #
+    #     try:
+    #         self.tr_event_loop.exit()
+    #     except AttributeError:
+    #         pass
 
     def _opt10081(self, rqname, trcode):
         data_cnt = self._get_repeat_cnt(trcode, rqname)
@@ -148,7 +184,7 @@ class OrderWindow(QWidget, form_class):
                          [rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no])
 
     def get_chejan_data(self, fid):
-        ret = self.kiwoom.dynamicCall("GetChejanData(int)", fid)
+        ret = self.kiwoom.get_chejan_data(fid)
         return ret
 
     def code_changed(self):
@@ -161,13 +197,22 @@ class OrderWindow(QWidget, form_class):
 
     def check_balance(self):
         self.reset_opw00018_output()
-        account_number = self.kiwoom.get_login_info("ACCNO")
-        account_number = account_number.split(';')[0]
+        self.kiwoom.account_number = self.comboAccount.currentText()
+        self.kiwoom.get_account_evaluation_balance(self.kiwoom.account_number, 0, "2000")
 
-        self.kiwoom.set_input_value("계좌번호", account_number)
-        self.kiwoom.comm_rq_data("opw00018_req", "opw00018", 0, "2000")
+        # # account_number = self.kiwoom.get_login_info("ACCNO")
+        # self.kiwoom.account_number = self.comboAccount.currentText()
+        # print('check_balance > account_number', self.kiwoom.account_number)
+        #
+        # self.kiwoom.set_input_value("계좌번호", self.kiwoom.account_number)
+        # self.kiwoom.comm_rq_data("계좌평가잔고내역요청", "opw00018", 0, "2000")
+        # self.tr_event_loop.exec_()
 
-        while self.kiwoom.remained_data:
-            time.sleep(0.2)
-            self.kiwoom.set_input_value("계좌번호", account_number)
-            self.kiwoom.comm_rq_data("opw00018_req", "opw00018", 2, "2000")
+
+        #
+        # while self.kiwoom.remained_data:
+        #     print('self.kiwoom.remained_data')
+        #     time.sleep(0.2)
+        #     self.kiwoom.get_account_evaluation_balance(self.kiwoom.account_number, 2, "2000")
+        #     # self.kiwoom.set_input_value("계좌번호", self.kiwoom.account_number)
+        #     # self.kiwoom.comm_rq_data("계좌평가잔고내역요청", "opw00018", 2, "2000")
