@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>893</width>
+    <width>950</width>
     <height>458</height>
    </rect>
   </property>
@@ -258,12 +258,12 @@
      <string>실시간 조회</string>
     </property>
    </widget>
-   <widget class="QTableWidget" name="tableWidget">
+   <widget class="QTableWidget" name="tableEvaulaltion">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>591</width>
+      <width>611</width>
       <height>91</height>
      </rect>
     </property>
@@ -298,12 +298,12 @@
      </property>
     </column>
    </widget>
-   <widget class="QTableWidget" name="tableWidget_2">
+   <widget class="QTableWidget" name="tableMyItems">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>120</y>
-      <width>601</width>
+      <width>621</width>
       <height>251</height>
      </rect>
     </property>

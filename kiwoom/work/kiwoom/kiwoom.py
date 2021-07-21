@@ -1,5 +1,6 @@
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
+
 from kiwoom.win_login_connect_state import LoginConnectStateWindow
 from kiwoom.win_my_info import MyInfoWindow
 from kiwoom.win_deposit_info import DepositInfoWindow
@@ -12,6 +13,7 @@ from kiwoom.win_order import OrderWindow
 
 from kiwoom.worker import Worker
 
+# referer : https://goni9071.tistory.com/263
 
 class Kiwoom(QAxWidget):
     def __init__(self, mainWindow):
@@ -40,6 +42,10 @@ class Kiwoom(QAxWidget):
         # 종목 분석 관련 변수
         self.calculator_list = []
 
+        # 보유종목 정보
+        # self.opw00018Data = {'accountEvaluation': [], 'stocks': []}
+        self.opw00018Data = {'accountEvaluation': {}, 'stocks': []}
+        self.opw00001Data = {}
         # 화면 번호
         """
         화면번호는 서버에 조회나 주문등 필요한 기능을 요청할때 이를 구별하기 위한 키값으로 이해하시면 됩니다. 
@@ -149,7 +155,8 @@ class Kiwoom(QAxWidget):
         :param next_no:
         :param screen_no:
         :return:
-            tr_code: opw00001('예수금상세현황요청'), opw00018('계좌평가잔고내역요청'),
+            tr_code:
+            opw00001('예수금상세현황요청'), opw00018('계좌평가잔고내역요청'),
             opt10075('실시간미체결요청'), opt10081('주식일봉차트조회요청'), opt10001('종목정보요청')
         """
         self.dynamicCall("CommRqData(QString, QString, int, QString", rq_name, tr_code, next_no, screen_no)
@@ -175,6 +182,14 @@ class Kiwoom(QAxWidget):
         return ret.strip()
 
     def get_repeat_cnt(self, tr_code, rq_name):
+        """
+        조회수신한 멀티데이터의 갯수(반복)수를 얻을수 있습니다. 예를들어 차트조회는 한번에 최대 900개 데이터를 수신할 수 있는데
+        이렇게 수신한 데이터갯수를 얻을때 사용합니다.
+        이 함수는 반드시 OnReceiveTRData()이벤트 함수가 호출될때 그 안에서 사용해야 합니다.
+        :param tr_code:
+        :param rq_name:
+        :return:
+        """
         ret = self.dynamicCall("GetRepeatCnt(QString, QString)", tr_code, rq_name)
         return ret
 
@@ -260,6 +275,7 @@ class Kiwoom(QAxWidget):
         :param scr_number:
         :return:
         """
+        print('get_account_evaluation_balance', account_number, prev_next, scr_number)
         self.account_number = account_number
         self.screen_my_account = scr_number
 
@@ -369,26 +385,24 @@ class Kiwoom(QAxWidget):
 
     def onreceive_tr_data_withholdings(self, tr_code, rq_name):
         """
-        예수금상세현황요청
+        예수금상세현황요청 (opw00001)
         :param tr_code:
         :param rq_name:
         :return:
         """
-        deposit = self.get_comm_data(tr_code, rq_name, 0, '예수금')
-        self.deposit = int(deposit)
+        keyList = ['예수금', '출금가능금액', '주문가능금액', 'd+2추정예수금']
+        for key in keyList:
+            value = self.get_comm_data(tr_code, rq_name, 0, key)
+            value = self.change_format(value)
+            self.opw00001Data[key] = value
 
-        withdraw_deposit = self.get_comm_data(tr_code, rq_name, 0, '출금가능금액')
-        self.withdraw_deposit = int(withdraw_deposit)
-
-        order_deposit = self.get_comm_data(tr_code, rq_name, 0, '주문가능금액')
-        self.order_deposit = int(order_deposit)
-
+        print('opw00001Data', self.opw00001Data)
         self.cancel_screen_number(self.screen_my_account)
         self.tr_event_loop.exit()
 
     def onreceive_tr_data_account_evaluation_balance(self, tr_code, rq_name, prev_next):
         """
-        계좌평가잔고내역요청
+        계좌평가잔고내역요청 (opw00018)
         :param tr_code:
         :param rq_name:
         :param prev_next:
@@ -396,23 +410,27 @@ class Kiwoom(QAxWidget):
         """
 
         print('onreceive_tr_data_account_evaluation_balance start');
-        if (self.total_buy_money == None or self.total_evaluation_money == None
-                or self.total_evaluation_profit_and_loss_money == None or self.total_yield == None):
-            total_buy_money = self.get_comm_data(tr_code, rq_name, 0, '총매입금액')
-            self.total_buy_money = int(total_buy_money)
+        # if (self.total_buy_money == None or self.total_evaluation_money == None
+        #         or self.total_evaluation_profit_and_loss_money == None or self.total_yield == None):
+        accountEvaluation = {}
+        keyList = ['총매입금액', '총평가금액', '총평가손익금액', '총수익률(%)', '추정예탁자산']
 
-            total_evaluation_money = self.get_comm_data(tr_code, rq_name, 0, '총평가금액')
-            self.total_evaluation_money = int(total_evaluation_money)
+        for key in keyList:
+            value = self.get_comm_data(tr_code, rq_name, 0, key)
 
-            total_evaluation_profit_and_loss_money = self.get_comm_data(tr_code, rq_name, 0, '총평가손익금액')
-            self.total_evaluation_profit_and_loss_money = int(
-                total_evaluation_profit_and_loss_money)
+            if key.startswith("총수익률"):
+                value = self.change_format(value, 1)
+            else:
+                value = self.change_format(value)
 
-            total_yield = self.get_comm_data(tr_code, rq_name, 0, '총수익률(%)')
-            self.total_yield = float(total_yield)
+            # accountEvaluation.append(value)
+            accountEvaluation[key] = value
+
+        self.opw00018Data['accountEvaluation'] = accountEvaluation
+
+        print('opw00018Data', self.opw00018Data)
 
         cnt = self.get_repeat_cnt(tr_code, rq_name)
-
         for i in range(cnt):
             stock_code = self.get_comm_data(tr_code, rq_name, i, '종목번호')
             stock_code = stock_code.strip()[1:]
@@ -421,23 +439,28 @@ class Kiwoom(QAxWidget):
             stock_name = stock_name.strip()  # 필요 없는 공백 제거.
 
             stock_evaluation_profit_and_loss = self.get_comm_data(tr_code, rq_name, i, '평가손익')
-            stock_evaluation_profit_and_loss = int(
-                stock_evaluation_profit_and_loss)
+            # stock_evaluation_profit_and_loss = int(stock_evaluation_profit_and_loss)
+            stock_evaluation_profit_and_loss = self.change_format(stock_evaluation_profit_and_loss)
+
 
             stock_yield = self.get_comm_data(tr_code, rq_name, i, '수익률(%)')
             stock_yield = float(stock_yield)
 
             stock_buy_money = self.get_comm_data(tr_code, rq_name, i, '매입가')
-            stock_buy_money = int(stock_buy_money)
+            stock_buy_money = self.change_format(stock_buy_money)
+            # stock_buy_money = int(stock_buy_money)
 
             stock_quantity = self.get_comm_data(tr_code, rq_name, i, '보유수량')
-            stock_quantity = int(stock_quantity)
+            stock_quantity = self.change_format(stock_quantity)
+            # stock_quantity = int(stock_quantity)
 
             stock_trade_quantity = self.get_comm_data(tr_code, rq_name, i, '매매가능수량')
-            stock_trade_quantity = int(stock_trade_quantity)
+            stock_trade_quantity = self.change_format(stock_trade_quantity)
+            # stock_trade_quantity = int(stock_trade_quantity)
 
             stock_present_price = self.get_comm_data(tr_code, rq_name, i, '현재가')
-            stock_present_price = int(stock_present_price)
+            stock_present_price = self.change_format(stock_present_price)
+            # stock_present_price = int(stock_present_price)
 
             if not stock_code in self.account_stock_dict:
                 self.account_stock_dict[stock_code] = {}
@@ -464,7 +487,7 @@ class Kiwoom(QAxWidget):
 
     def onreceive_tr_data_realtime_pending(self, scr_no, tr_code, rq_name, prev_next):
         """
-        실시간미체결요청
+        실시간미체결요청 (opt10075)
         :param scr_no:
         :param tr_code:
         :param rq_name:
@@ -535,7 +558,7 @@ class Kiwoom(QAxWidget):
 
     def onreceive_tr_data_daily_stock_chart(self, tr_code, rq_name, prev_next):
         """
-        주식일봉차트조회요청
+        주식일봉차트조회요청 (opt10081)
         :param tr_code:
         :param rq_name:
         :param prev_next:
@@ -675,3 +698,20 @@ class Kiwoom(QAxWidget):
             conditionDictionary[int(key)] = value
 
         return conditionDictionary
+
+    def change_format(self, data, percent=0):
+        formatData = ''
+        if data:
+            if percent == 0:
+                d = int(data)
+                formatData = '{:-,d}'.format(d)
+
+            elif percent == 1:
+                f = int(data) / 100
+                formatData = '{:-,.2f}'.format(f)
+
+            elif percent == 2:
+                f = float(data)
+                formatData = '{:-,.2f}'.format(f)
+
+        return formatData

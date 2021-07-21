@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menu_new_project">
+     <property name="title">
+      <string>New Project</string>
+     </property>
+     <addaction name="menu_new_project_json"/>
+     <addaction name="actionES6_Format"/>
+     <addaction name="actionProperties_Format"/>
+    </widget>
+    <widget class="QMenu" name="menuOpen_Recent">
+     <property name="title">
+      <string>Open Recent</string>
+     </property>
+     <addaction name="actionqewrqwe"/>
+     <addaction name="separator"/>
+     <addaction name="actionClear_List"/>
+    </widget>
+    <addaction name="menu_new_project"/>
+    <addaction name="actionImport_Project"/>
+    <addaction name="actionOpen_Containing_Folder"/>
+    <addaction name="menuOpen_Recent"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionReload_from_Disk"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionAdd_Locale"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Translation"/>
+    <addaction name="actionFind_Translation"/>
+    <addaction name="separator"/>
+    <addaction name="actionRename_Translation"/>
+    <addaction name="actionDuplicate_Translation"/>
+    <addaction name="actionDelete_Translation"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionProject_Preferences"/>
+    <addaction name="actionPreferences"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionCheck_for_Updates"/>
+    <addaction name="actionAbout_i18n_editor"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuView"/>
+   <addaction name="menuSettings"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionImport_Project">
+   <property name="text">
+    <string>Import Project</string>
+   </property>
+  </action>
+  <action name="actionOpen_Containing_Folder">
+   <property name="text">
+    <string>Open Containing Folder</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionReload_from_Disk">
+   <property name="text">
+    <string>Reload from Disk</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="menu_new_project_json">
+   <property name="text">
+    <string>JSON Format...</string>
+   </property>
+  </action>
+  <action name="actionES6_Format">
+   <property name="text">
+    <string>ES6 Format...</string>
+   </property>
+  </action>
+  <action name="actionProperties_Format">
+   <property name="text">
+    <string>Properties Format</string>
+   </property>
+  </action>
+  <action name="actionqewrqwe">
+   <property name="text">
+    <string>qewrqwe</string>
+   </property>
+  </action>
+  <action name="actionClear_List">
+   <property name="text">
+    <string>Clear List</string>
+   </property>
+  </action>
+  <action name="actionAdd_Locale">
+   <property name="text">
+    <string>Add Locale...</string>
+   </property>
+  </action>
+  <action name="actionAdd_Translation">
+   <property name="text">
+    <string>Add Translation...</string>
+   </property>
+  </action>
+  <action name="actionFind_Translation">
+   <property name="text">
+    <string>Find Translation</string>
+   </property>
+  </action>
+  <action name="actionRename_Translation">
+   <property name="text">
+    <string>Rename Translation...</string>
+   </property>
+  </action>
+  <action name="actionDuplicate_Translation">
+   <property name="text">
+    <string>Duplicate Translation...</string>
+   </property>
+  </action>
+  <action name="actionDelete_Translation">
+   <property name="text">
+    <string>Delete Translation</string>
+   </property>
+  </action>
+  <action name="actionProject_Preferences">
+   <property name="text">
+    <string>Project Preferences...</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences...</string>
+   </property>
+  </action>
+  <action name="actionCheck_for_Updates">
+   <property name="text">
+    <string>Check for Updates...</string>
+   </property>
+  </action>
+  <action name="actionAbout_i18n_editor">
+   <property name="text">
+    <string>About i18n-editor</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
