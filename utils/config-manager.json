@@ -1,0 +1,8 @@
+{
+  "epochs": 10,
+  "model": {
+    "batch_size": 32,
+    "cells": 64
+  }
+
+}

@@ -1,5 +1,9 @@
 {
   "system": {
-    "copied": "Copied."
+    "copied": "Copied.",
+    "test": "Test"
+  },
+  "other": {
+    "one": "is 1"
   }
 }

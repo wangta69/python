@@ -111,6 +111,7 @@ class Mysql:
                 return rs
         finally:
             pass
+
     def codeFromCompName(self, comp_name):
         try:
             with self.conn.cursor(pymysql.cursors.DictCursor) as curs:

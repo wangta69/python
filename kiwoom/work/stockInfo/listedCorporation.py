@@ -62,7 +62,7 @@ class ListedCorporation(QWidget, form_class):
         # print(kospi)
         # print(f'kosdaq length: {len(kosdaq)}')
         # print(kosdaq)
-      #  print(kosdaq)
+        # print(kosdaq)
         # for i, row in kosdaq:
 
         stocks = kospi.append(kosdaq)  # kospi 뒤로 kosdaq dataframe을 합친다.

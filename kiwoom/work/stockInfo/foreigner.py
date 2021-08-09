@@ -43,7 +43,7 @@ class Foreigner(QAxWidget):
         plt.rcParams['font.size'] = 12
         plt.figure(figsize=(16, 8))
 
-        plt.bar(sojin['회사명'],sojin['한도소진율'])
+        plt.bar(sojin['회사명'], sojin['한도소진율'])
         for x,y in enumerate(list(sojin['한도소진율'])):
             plt.text(x, y, '{:.2f}%'.format(y), fontsize=13, color='#ff0000',
                      horizontalalignment='center', verticalalignment='bottom')
