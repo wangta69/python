@@ -63,11 +63,11 @@ class Quant():
         for row in corporations:
             code = MagicUtil.make_code(row['code'])
             try:
-                time.sleep(1)
+                time.sleep(0.1)
                 try:
                     fs_df = MagicUtil.make_fs_dataframe(code)
                 except requests.exceptions.Timeout:
-                    time.sleep(60)
+                    time.sleep(10)
                     fs_df = MagicUtil.make_fs_dataframe(code)
                 fs_df_changed = MagicUtil.change_df(code, fs_df)
                 if num == 0:
@@ -93,12 +93,13 @@ class Quant():
         # for num, code in enumerate(code_data['종목코드']):
         for row in corporations:
             code = MagicUtil.make_code(row['code'])
+            print(num, code)
             try:
-                time.sleep(1)
+                time.sleep(0.1)
                 try:
                     fr_df = MagicUtil.make_fr_dataframe(code)
                 except requests.exceptions.Timeout:
-                    time.sleep(60)
+                    time.sleep(10)
                     fr_df = MagicUtil.make_fr_dataframe(code)
                 fr_df_changed = MagicUtil.change_df(code, fr_df)
                 if num == 0 :
@@ -121,12 +122,13 @@ class Quant():
         # for num, code in enumerate(code_data['종목코드']):
         for row in corporations:
             code = MagicUtil.make_code(row['code'])
+            print(num, code)
             try:
-                time.sleep(1)
+                time.sleep(0.1)
                 try:
                     invest_df = MagicUtil.make_invest_dataframe(code)
                 except requests.exceptions.Timeout:
-                    time.sleep(60)
+                    time.sleep(10)
                     invest_df = MagicUtil.make_invest_dataframe(code)
                 invest_df_changed = MagicUtil.change_df(code, invest_df)
                 if num == 0 :
@@ -144,5 +146,5 @@ class Quant():
 
 quant = Quant()
 # quant.createFinancialStatements()
-quant.createFinancialRatio()
-# quant.createInvestmentIndiators()
+# quant.createFinancialRatio()
+quant.createInvestmentIndiators()

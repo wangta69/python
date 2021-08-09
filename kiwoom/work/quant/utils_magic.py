@@ -6,7 +6,6 @@ import requests
 import bs4
 import time
 
-
 class MagicUtil:
     # 마법공식
     def magic(self, file_path):
@@ -86,10 +85,12 @@ class MagicUtil:
         price_df = pd.DataFrame({code: price_list}, index=date_list)
         return price_df
 
-    def make_code(self, x):
+    @staticmethod
+    def make_code(x):
         x = str(x)
         return 'A' + '0' * (6-len(x)) + x
 
+    @staticmethod
     def make_code2(x):
         x = str(x)
         return '0' * (6 - len(x)) + x
@@ -151,7 +152,8 @@ class MagicUtil:
         return fs_df
 
     # code, dataframe -> total df merge
-    def change_df(self, firm_code, dataframe):
+    @staticmethod
+    def change_df(firm_code, dataframe):
         for num, col in enumerate(dataframe.columns):
             temp_df = pd.DataFrame({firm_code: dataframe[col]})
             temp_df = temp_df.T
@@ -164,7 +166,8 @@ class MagicUtil:
         return total_df
 
     # 재무 비율 df
-    def make_fr_dataframe(self, firm_code):
+    @staticmethod
+    def make_fr_dataframe(firm_code):
         fr_url = 'https://comp.fnguide.com/SVO2/asp/SVD_FinanceRatio.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=104&stkGb=701&gicode=' + firm_code
         fr_page = requests.get(fr_url)
         fr_tables = pd.read_html(fr_page.text)
@@ -180,7 +183,8 @@ class MagicUtil:
         return temp_df
 
     # [코드 3.23] 투자지표 데이터프레임을 만드는 함수 (CH3. 데이터 수집하기.ipynb)
-    def make_invest_dataframe(self, firm_code):
+    @staticmethod
+    def make_invest_dataframe(firm_code):
         invest_url = 'https://comp.fnguide.com/SVO2/asp/SVD_Invest.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=105&stkGb=701&gicode=' + firm_code
         invest_page = requests.get(invest_url)
         invest_tables = pd.read_html(invest_page.text)
@@ -196,7 +200,8 @@ class MagicUtil:
         return temp_df
 
     #  재무 데이터 전처리하는 함수
-    def get_finance_data(self, path):
+    @staticmethod
+    def get_finance_data(path):
         data_path = path
         raw_data = pd.read_excel(data_path, index_col=0)
         big_col = list(raw_data.columns)
@@ -212,14 +217,16 @@ class MagicUtil:
         return clean_df
 
     # ROA 컬럼에서 N/A(IFRS) NaN으로 바꾸기
-    def check_IFRS(self, x):
+    @staticmethod
+    def check_IFRS(x):
         if x == 'N/A(IFRS)':
             return np.NaN
         else:
             return x
 
     # PER기준으로 오름차순으로 정렬하여 주는 함수
-    def low_per(self, invest_df, index_date, num):
+    @staticmethod
+    def low_per(invest_df, index_date, num):
         invest_df[(index_date, 'PER')] = pd.to_numeric(invest_df[(index_date, 'PER')])
         per_sorted = invest_df.sort_values(by=(index_date, 'PER'))
         return per_sorted[index_date][:num]
@@ -266,8 +273,8 @@ class MagicUtil:
         value_combo_df = value_combo_df.sort_values(by='종합순위')
 
         return value_combo_df[:num]
-    #r = make_value_combo(['PER', 'PBR'], invest_df, '2015/12', 20)
-    #r = make_value_combo(['PER', 'PBR', 'PSR', 'PCR'], invest_df, '2015/12', 20)
+    # r = make_value_combo(['PER', 'PBR'], invest_df, '2015/12', 20)
+    # r = make_value_combo(['PER', 'PBR', 'PSR', 'PCR'], invest_df, '2015/12', 20)
 
     # F-score 함수
     def get_fscore(self, fs_df, index_date, num):
@@ -334,7 +341,6 @@ class MagicUtil:
             new_code_list.append('A' + code)
         selected_df = data_df.loc[new_code_list]
         return selected_df
-
 
     # 백테스트 시작날짜가 주어지면 전략 기준 날짜를 계산하는 함수
     # 12월 재무 결과 다음 연도 6월에 사용
