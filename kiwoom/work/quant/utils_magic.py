@@ -202,6 +202,7 @@ class MagicUtil:
     #  재무 데이터 전처리하는 함수
     @staticmethod
     def get_finance_data(path):
+        print('get_finance_data', path)
         data_path = path
         raw_data = pd.read_excel(data_path, index_col=0)
         big_col = list(raw_data.columns)
@@ -251,7 +252,8 @@ class MagicUtil:
     #print(magic_formula(fr_df, invest_df, '2018/12', 10))
 
     # 저평가 지수를 기준으로 정렬하여 순위 만들어 주는 함수
-    def get_value_rank(self, invest_df, value_type, index_date, num):
+    @staticmethod
+    def get_value_rank(invest_df, value_type, index_date, num):
         invest_df[(index_date,  value_type)] = pd.to_numeric(invest_df[(index_date,  value_type)])
         value_sorted = invest_df.sort_values(by=(index_date,  value_type))[index_date]
         value_sorted[  value_type + '순위'] = value_sorted[value_type].rank()
@@ -259,9 +261,10 @@ class MagicUtil:
     #print(get_value_rank(invest_df, 'PSR', '2018/12', 20))
 
     # 저평가 지표 조합 함수 (CH4. 전략 구현하기.ipynb)
-    def make_value_combo(self, value_list, invest_df, index_date, num):
+    @staticmethod
+    def make_value_combo(value_list, invest_df, index_date, num):
         for i, value in enumerate(value_list):
-            temp_df = self.get_value_rank(invest_df, value, index_date, None)
+            temp_df = MagicUtil.get_value_rank(invest_df, value, index_date, None)
             if i == 0:
                 value_combo_df = temp_df
                 rank_combo = temp_df[value + '순위']
@@ -277,7 +280,8 @@ class MagicUtil:
     # r = make_value_combo(['PER', 'PBR', 'PSR', 'PCR'], invest_df, '2015/12', 20)
 
     # F-score 함수
-    def get_fscore(self, fs_df, index_date, num):
+    @staticmethod
+    def get_fscore(fs_df, index_date, num):
         # pd.set_option('chained', None)
         fscore_df = fs_df[index_date]
         fscore_df['당기순이익점수'] = fscore_df['당기순이익'] > 0

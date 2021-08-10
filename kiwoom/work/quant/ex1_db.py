@@ -131,10 +131,12 @@ class Quant():
                     time.sleep(10)
                     invest_df = MagicUtil.make_invest_dataframe(code)
                 invest_df_changed = MagicUtil.change_df(code, invest_df)
+                print(invest_df_changed)
                 if num == 0 :
                     total_invest = invest_df_changed
                 else:
                     total_invest = pd.concat([total_invest, invest_df_changed])
+                num = num + 1
             except ValueError as e:
                 print('I got a ValueError - reason "%s"' % str(e))
                 continue
