@@ -126,15 +126,17 @@ class MagicUtil:
         total_price.to_excel(outpath + '.xlsx')
 
     # 포괄손익계산서, 재무상태표, 현금흐름표
-    def make_fs_dataframe(self, firm_code):
+    @staticmethod
+    def make_fs_dataframe(firm_code):
         # fs_tables[0] # 포괄손익계산서 연간 #fs_tables[1] # 포괄손익계산서 분기
         # fs_tables[2] # 재무상태표 연간 #fs_tables[3] # 재무상태표 분기
         # fs_tables[4] # 현금흐름표 연간 #fs_tables[5] # 현금흐름표 분기
         fs_url = 'https://comp.fnguide.com/SVO2/asp/SVD_Finance.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=103&stkGb=701&gicode=' + firm_code
-        fs_page = requests.get(fs_url)
-        fs_tables = pd.read_html(fs_page.text)
-
+        # fs_page = requests.get(fs_url)
+        # fs_tables = pd.read_html(fs_page.text)
+        fs_tables = pd.read_html(fs_url)
         temp_df = fs_tables[0]
+
         temp_df = temp_df.set_index(temp_df.columns[0])
         temp_df = temp_df[temp_df.columns[:4]]
         temp_df = temp_df.loc[['매출액', '영업이익', '당기순이익']]
@@ -169,10 +171,12 @@ class MagicUtil:
     @staticmethod
     def make_fr_dataframe(firm_code):
         fr_url = 'https://comp.fnguide.com/SVO2/asp/SVD_FinanceRatio.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=104&stkGb=701&gicode=' + firm_code
-        fr_page = requests.get(fr_url)
-        fr_tables = pd.read_html(fr_page.text)
-
+        # fr_page = requests.get(fr_url)
+        # fr_tables = pd.read_html(fr_page.text)
+        fr_tables = pd.read_html(fr_url)
         temp_df = fr_tables[0]
+
+        # print('temp_df.columns[0]', temp_df.columns[0])
         temp_df = temp_df.set_index(temp_df.columns[0])
         temp_df = temp_df.loc[['유동비율계산에 참여한 계정 펼치기',  # 유동비율(유동자산 / 유동부채) * 100
                                '부채비율계산에 참여한 계정 펼치기',  # 부채비율(총부채 / 총자본) * 100
@@ -180,7 +184,9 @@ class MagicUtil:
                                'ROA계산에 참여한 계정 펼치기',  # ROA(당기순이익(연율화) / 총자산(평균)) * 100
                                'ROIC계산에 참여한 계정 펼치기']]  # ROIC(세후영업이익(연율화)/영업투하자본(평균))*100
         temp_df.index = ['유동비율', '부채비율', '영업이익률', 'ROA', 'ROIC']
-        return temp_df
+        # return temp_df
+
+        return temp_df.astype('float64')
 
     # [코드 3.23] 투자지표 데이터프레임을 만드는 함수 (CH3. 데이터 수집하기.ipynb)
     @staticmethod
@@ -197,7 +203,7 @@ class MagicUtil:
                                'PBR계산에 참여한 계정 펼치기',  # PBR수정주가(보통주) / 수정BPS
                                '총현금흐름']]  # 총현금흐름세후영업이익 + 유무형자산상각비
         temp_df.index = ['PER', 'PCR', 'PSR', 'PBR', '총현금흐름']
-        return temp_df
+        return temp_df.astype('float64')
 
     #  재무 데이터 전처리하는 함수
     @staticmethod
