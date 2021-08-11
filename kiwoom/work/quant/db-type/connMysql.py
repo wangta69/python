@@ -206,5 +206,9 @@ class Mysql:
         finally:
             pass
 
+
     def close(self):
         self.conn.close()
+
+
+
