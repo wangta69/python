@@ -9,16 +9,15 @@ class Ranking():
         self.mysql = Mysql()
 
 
-    def setOrder(self):
+    def setOrder(self, date):
         '''
         저평가된 항목을 찾기 위해 분기별 정렬을 처리한다.
         :return:
         '''
-        # self.mysql.updateOrder('202103', 'order_per', 'per')
-        self.mysql.updateOrder('202106', 'order_pbr', 'pbr')
-        self.mysql.updateOrder('202106', 'order_per', 'per')
-        self.mysql.updateOrder('202106', 'order_pcr', 'pcr')
-        self.mysql.updateOrder('202106', 'order_psr', 'psr')
+        self.mysql.updateOrder(date, 'order_pbr', 'pbr')
+        self.mysql.updateOrder(date, 'order_per', 'per')
+        self.mysql.updateOrder(date, 'order_pcr', 'pcr')
+        self.mysql.updateOrder(date, 'order_psr', 'psr')
 
     def makescore(self):
         '''
@@ -30,7 +29,7 @@ class Ranking():
 
 
 rank = Ranking()
-rank.setOrder()
+rank.setOrder(202106)
 rank.makescore()
 #
 # # option

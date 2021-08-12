@@ -1,0 +1,76 @@
+CREATE TABLE `corporations` (
+	`id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`market` CHAR(2) NOT NULL DEFAULT '' COMMENT 'KS: 코스피, KQ: 코스닥' COLLATE 'utf8mb4_unicode_ci',
+	`code` CHAR(6) NOT NULL DEFAULT '' COMMENT '종목코드' COLLATE 'utf8mb4_unicode_ci',
+	`comp_name` VARCHAR(50) NULL DEFAULT NULL COMMENT '회사명' COLLATE 'utf8mb4_unicode_ci',
+	`investing_comp_name` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+	`industry` VARCHAR(255) NULL DEFAULT NULL COMMENT '업종' COLLATE 'utf8mb4_unicode_ci',
+	`products` VARCHAR(255) NULL DEFAULT NULL COMMENT '주요제품' COLLATE 'utf8mb4_unicode_ci',
+	`listed_at` VARCHAR(10) NULL DEFAULT NULL COMMENT '상장인' COLLATE 'utf8mb4_unicode_ci',
+	`sett_month` VARCHAR(10) NULL DEFAULT NULL COMMENT '결산월' COLLATE 'utf8mb4_unicode_ci',
+	`ceo` VARCHAR(50) NULL DEFAULT NULL COMMENT '대표자' COLLATE 'utf8mb4_unicode_ci',
+	`url` VARCHAR(50) NULL DEFAULT NULL COMMENT '홈페이지' COLLATE 'utf8mb4_unicode_ci',
+	`region` VARCHAR(20) NULL DEFAULT NULL COMMENT '지역' COLLATE 'utf8mb4_unicode_ci',
+	`created_at` TIMESTAMP NULL DEFAULT NULL,
+	`updated_at` TIMESTAMP NULL DEFAULT NULL,
+	PRIMARY KEY (`id`) USING BTREE,
+	UNIQUE INDEX `UNIQUE IP` (`code`) USING BTREE
+)
+COLLATE='utf8mb4_unicode_ci'
+ENGINE=InnoDB
+;
+
+
+CREATE TABLE `earnings` (
+	`id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`code` VARCHAR(6) NOT NULL COMMENT '종목코드' COLLATE 'utf8mb4_unicode_ci',
+	`release_dt` DATE NOT NULL,
+	`period_end_dt` DATE NOT NULL,
+	`eps` FLOAT(10,2) NULL DEFAULT '0.00',
+	`eps_forcast` FLOAT(10,2) NULL DEFAULT '0.00',
+	`revenue` FLOAT(10,2) NULL DEFAULT '0.00',
+	`revenue_forcast` FLOAT(10,2) NULL DEFAULT '0.00',
+	PRIMARY KEY (`id`) USING BTREE,
+	UNIQUE INDEX `UNIQUE` (`code`, `period_end_dt`) USING BTREE
+)
+COLLATE='utf8mb4_unicode_ci'
+ENGINE=InnoDB
+;
+
+
+CREATE TABLE `financeinnfos` (
+	`id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`jcode` VARCHAR(6) NOT NULL COMMENT '종목코드' COLLATE 'utf8mb4_unicode_ci',
+	`yyyymm` CHAR(6) NOT NULL COLLATE 'utf8mb4_unicode_ci',
+	`roa` FLOAT(10,2) NULL DEFAULT NULL COMMENT 'ROA',
+	`roic` FLOAT(10,2) NULL DEFAULT NULL COMMENT 'ROIC',
+	`debt_ratio` FLOAT(10,2) NULL DEFAULT NULL COMMENT '부채비율',
+	`net_profit_margin` FLOAT(10,2) NULL DEFAULT NULL COMMENT '영업이익률',
+	`current_ratio` FLOAT(10,2) NULL DEFAULT NULL COMMENT '유동비율',
+	`revenue` FLOAT(10,2) NULL DEFAULT NULL COMMENT '매출액',
+	`operating_income` FLOAT(10,2) NULL DEFAULT NULL COMMENT '영업이익',
+	`net_income` FLOAT(10,2) NULL DEFAULT NULL COMMENT '당기순이익',
+	`asset` FLOAT(10,2) NULL DEFAULT NULL COMMENT '자산',
+	`liability` FLOAT(10,2) NULL DEFAULT NULL COMMENT '부채',
+	`equity` FLOAT(10,2) NULL DEFAULT NULL COMMENT '자본',
+	`cashflow_operating` FLOAT(10,2) NULL DEFAULT NULL COMMENT '영업활동으로인한현금흐름',
+	`per` FLOAT(10,2) NULL DEFAULT NULL COMMENT 'PER',
+	`pcr` FLOAT(10,2) NULL DEFAULT NULL COMMENT 'PCR',
+	`psr` FLOAT(10,2) NULL DEFAULT NULL COMMENT 'PSR',
+	`pbr` FLOAT(10,2) NULL DEFAULT NULL COMMENT 'PBR',
+	`total_cashflow` FLOAT(10,2) NULL DEFAULT NULL COMMENT '총현금흐름',
+	`order_per` INT(11) NULL DEFAULT NULL,
+	`order_pcr` INT(11) NULL DEFAULT NULL,
+	`order_psr` INT(11) NULL DEFAULT NULL,
+	`order_pbr` INT(11) NULL DEFAULT NULL,
+	`score_net_income` TINYINT(4) NULL DEFAULT NULL,
+	`score_cashflow_operating` TINYINT(4) NULL DEFAULT NULL,
+	`score_diff` TINYINT(4) NULL DEFAULT NULL,
+	`score_total` TINYINT(4) NULL DEFAULT NULL,
+	PRIMARY KEY (`id`) USING BTREE,
+	UNIQUE INDEX `UNIQUE CODE` (`jcode`, `yyyymm`) USING BTREE
+)
+COLLATE='utf8mb4_unicode_ci'
+ENGINE=InnoDB
+;
+

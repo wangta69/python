@@ -46,7 +46,10 @@ class Investing():
 
 
     def earnings(self):
-
+        """
+        earnings 를 가져와서 처리한다.
+        :return:
+        """
         rows = self.mysql.corporations()
         for row in rows:
             time.sleep(0.1)
@@ -71,8 +74,11 @@ class Investing():
                             # row['예측'] = row['예측'].replace('/', '')
                             r['주당순이익'] = re.sub('[/,\s,\,]', '', str(r['주당순이익']))
                             r['예측'] = re.sub('[/,\s,\,]', '', r['예측'])
-                            r['매출'] = re.sub('[B,M,\,]', '', r['매출'])
-                            r['예측.1'] = re.sub('[/,\s, B,M,\,]', '', r['예측.1'])
+                            r['매출'] = self.strtonumber(r['매출'])
+                            r['예측.1'] = self.strtonumber(r['예측.1'])
+                            # r['매출'] = re.sub('[B,M,\,]', '', r['매출'])
+                            # r['예측.1'] = re.sub('[/,\s, B,M,\,]', '', r['예측.1'])
+
                             r['발표일'] = re.sub('[년,월]', '-', r['발표일'])
                             r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
                             r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
@@ -170,30 +176,46 @@ class Investing():
         # print(df[0])
         df[0].columns = df[0].columns.str.replace('[/,\s]', '', regex=True)
 
-        for idx, row in df[0].iterrows():
+        for idx, r in df[0].iterrows():
             
             # row['예측'] = row['예측'].replace('/', '')
-            row['예측'] = re.sub('[/,\s]', '', row['예측'])
-            row['매출'] = re.sub('[B,M]', '', row['매출'])
-            row['예측.1'] = re.sub('[/,\s, B, M]', '', row['예측.1'])
 
-            row['주당순이익'] = row['주당순이익'].replace(',', "")
-            row['예측'] = row['예측'].replace(',', "")
-            row['매출'] = row['매출'].replace(',', "")
-            row['예측.1'] = row['예측.1'].replace(',', "")
+            r['주당순이익'] = re.sub('[/,\s,\,]', '', str(r['주당순이익']))
+            r['예측'] = re.sub('[/,\s,\,]', '', r['예측'])
 
-            row['발표일'] = re.sub('[년,월]', '-', row['발표일'])
-            row['발표일'] = re.sub('[일,\s]', '', row['발표일'])
-            row['기말'] = datetime.strptime(row['기말'], "%m/%Y")
-            self.mysql.earnings(294870, row)
+            r['매출'] = self.strtonumber(r['매출'])
+            r['예측.1'] = self.strtonumber(r['예측.1'])
+
+            r['발표일'] = re.sub('[년,월]', '-', r['발표일'])
+            r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
+            r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
+
+            print(r);
 
 
         pass
 
+    def strtonumber(self, s):
+        # s = re.sub('[/,\s, B,M,\,]', '',str)
+        if s == '--':
+            return '--'
+        else :
+            s = re.sub('[/,\s, \,]', '', s)
+            last_char = s[-1]
+            s = re.sub('[B,M]', '', s)
+            s = float(s)
+            if last_char == "M":
+                s = s * 1000000
+            elif last_char == "B":
+                s = s * 1000000000
+            return str(s)
+
+
 
 investing = Investing()
 # investing.updateInvestingCompName()
-# investing.test()
 investing.earnings()
+# investing.test()
+
 
 
