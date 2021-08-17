@@ -32,5 +32,8 @@
     2. earnings 을 스크롤 한다.
         investing.earnings()
 
+3. naver에서 현재 주가를 가져온다. (per을 이용하여 현재 주가 및 적정 주가를 확인하기 위함)
+    naver > ex1.py
+
 
 
