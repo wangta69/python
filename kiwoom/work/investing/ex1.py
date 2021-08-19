@@ -26,9 +26,11 @@ class Investing():
         """
         try:
             result = investpy.stocks.get_stock_company_profile(code, 'south korea', 'en')
+            # result = investpy.stocks.get_stock_company_profile(code, 'KOSDAQ', 'en')
+
             segment = result['url'].split('/')
             comp_name = segment[4].replace('-company-profile', "")
-            print(comp_name)
+
             return comp_name
         except:
             return None
@@ -39,10 +41,25 @@ class Investing():
     def updateInvestingCompName(self):
         rows = self.mysql.corporations()
         for row in rows:
-            time.sleep(0.1)
-            en_name = self.getInvestingCompName(row['code'])
-            if en_name:
-                self.mysql.updateInvestingCompname(row['id'], en_name)
+
+            if row['investing_comp_name'] == None:
+                time.sleep(0.1)
+                # print('code', row['code'])
+                # en_name = self.getInvestingCompName(row['code'])
+                # print('en_name', en_name)
+                # if en_name:
+                #     self.mysql.updateInvestingCompname(row['id'], en_name)
+                try:
+                    search_results = investpy.search_quotes(text=row['code'], products=['stocks'],
+                                                            countries=['south korea'], n_results=5)
+                    for search_result in search_results:
+                        en_name = search_result.tag.replace('/equities/', "")
+                    if en_name:
+                        print(en_name)
+                        self.mysql.updateInvestingCompname(row['id'], en_name)
+                except:
+                     pass
+
 
 
     def earnings(self):
@@ -64,10 +81,11 @@ class Investing():
                 params = {
 
                 }
-                url = 'https://kr.investing.com/equities/' + row['investing_comp_name'] + '-earnings'
-                page = requests.get(url, headers=headers, data=params)
-                df = pd.read_html(page.text)
+
                 try:
+                    url = 'https://kr.investing.com/equities/' + row['investing_comp_name'] + '-earnings'
+                    page = requests.get(url, headers=headers, data=params)
+                    df = pd.read_html(page.text)
                     df[0].columns = df[0].columns.str.replace('[/,\s]', '', regex=True)
                     for idx, r in df[0].iterrows():
                         try:
@@ -193,6 +211,31 @@ class Investing():
             print(r);
 
 
+        pass
+
+    def searchTopbar(self):
+        search_results = investpy.search_quotes(text='apple', products=['stocks', 'bonds'],
+                                                countries=['united states'], n_results=5)
+
+        search_results = investpy.search_quotes(text='124560', products=['stocks'],
+                                                countries=['south korea'], n_results=5)
+        print('search_results', search_results)
+
+        for search_result in search_results:
+            print(search_result)
+        # headers = {
+        #     "User-Agent": random_user_agent(),
+        #     "X-Requested-With": "XMLHttpRequest",
+        #     "Accept": "text/html",
+        #     "Accept-Encoding": "gzip, deflate",
+        #     "Connection": "keep-alive",
+        # }
+        # params = {
+        #     'search_text': '270660'
+        # }
+        # url = 'https://www.investing.com/search/service/searchTopBar'
+        # page = requests.post(url, headers=headers, data=params)
+        # print(page)
         pass
 
     def strtonumber(self, s):
