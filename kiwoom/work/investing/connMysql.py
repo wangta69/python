@@ -17,7 +17,7 @@ class Mysql:
     def corporations(self):
         try:
             with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id, code, comp_name, investing_comp_name from corporations"
+                sql = "select id, code, comp_name, investing_comp_name from corporations where status = 0"
                 curs.execute(sql)
 
                 rs = curs.fetchall()

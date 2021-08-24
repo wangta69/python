@@ -1,12 +1,12 @@
 import pandas as pd
 from utils_magic import MagicUtil
 
-#fs_path = r'D:/work/stock/quant/재무제표데이터_2018.xlsx'
-#fr_path = r'D:/work/stock/quant/재무비율데이터_2018.xlsx'
-#invest_path = 'D:/work/stock/quant/투자지표데이터_2018.xlsx'
-fs_path = r'D:/work/stock/quant/재무제표데이터_2019.xlsx'
-fr_path = r'D:/work/stock/quant/재무비율데이터_2019.xlsx'
-invest_path = 'D:/work/stock/quant/투자지표데이터_2019.xlsx'
+#fs_path = r'D:/work/stock/fnguide/재무제표데이터_2018.xlsx'
+#fr_path = r'D:/work/stock/fnguide/재무비율데이터_2018.xlsx'
+#invest_path = 'D:/work/stock/fnguide/투자지표데이터_2018.xlsx'
+fs_path = r'D:/work/stock/fnguide/재무제표데이터_2019.xlsx'
+fr_path = r'D:/work/stock/fnguide/재무비율데이터_2019.xlsx'
+invest_path = 'D:/work/stock/fnguide/투자지표데이터_2019.xlsx'
 fs_df = MagicUtil.get_finance_data(fs_path)
 fr_df = MagicUtil.get_finance_data(fr_path)
 invest_df = MagicUtil.get_finance_data(invest_path)
@@ -15,7 +15,7 @@ invest_df = MagicUtil.get_finance_data(invest_path)
 pd.set_option('chained', None)
 
 # momentum
-price_path = r'D:/work/stock/quant/가격데이터.xlsx'
+price_path = r'D:/work/stock/fnguide/가격데이터.xlsx'
 #price_df = pd.read_excel(price_path, index_col=0)
 
 # 저평가 데이터프레임과 F-score 데이터프레임 만들기 (CH4. 전략 구현하기.ipynb)

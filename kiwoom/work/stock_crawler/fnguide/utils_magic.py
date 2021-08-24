@@ -5,8 +5,13 @@ import numpy as np
 import requests
 import bs4
 import time
+from stock_crawler.connMysql import Mysql
 
 class MagicUtil:
+    def __init__(self, parent=None):
+        super().__init__()
+        self.mysql = Mysql()
+
     # 마법공식
     def magic(self, file_path):
         wb = xlrd.open_workbook(file_path)
@@ -139,7 +144,38 @@ class MagicUtil:
 
         temp_df = temp_df.set_index(temp_df.columns[0])
         temp_df = temp_df[temp_df.columns[:4]]
-        temp_df = temp_df.loc[['매출액', '영업이익', '당기순이익']]
+        temp_df = temp_df.loc[['매출액', '매출총이익', '영업이익', '당기순이익']]
+
+        temp_df2 = fs_tables[2]
+        temp_df2 = temp_df2.set_index(temp_df2.columns[0])
+        temp_df2 = temp_df2.loc[['자산', '부채', '자본']]
+
+        temp_df3 = fs_tables[4]
+        temp_df3 = temp_df3.set_index(temp_df3.columns[0])
+        temp_df3 = temp_df3.loc[['영업활동으로인한현금흐름']]
+
+        fs_df = pd.concat([temp_df, temp_df2, temp_df3])
+
+        return fs_df
+
+    def make_fs_dataframe_test(firm_code):
+        # fs_tables[0] # 포괄손익계산서 연간 #fs_tables[1] # 포괄손익계산서 분기
+        # fs_tables[2] # 재무상태표 연간 #fs_tables[3] # 재무상태표 분기
+        # fs_tables[4] # 현금흐름표 연간 #fs_tables[5] # 현금흐름표 분기
+        fs_url = 'https://comp.fnguide.com/SVO2/asp/SVD_Finance.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=103&stkGb=701&gicode=' + firm_code
+        # fs_page = requests.get(fs_url)
+        # fs_tables = pd.read_html(fs_page.text)
+        fs_tables = pd.read_html(fs_url)
+        temp_df = fs_tables[0]
+
+
+
+        temp_df = temp_df.set_index(temp_df.columns[0])
+        temp_df = temp_df[temp_df.columns[:4]]
+        # print(temp_df)
+        # return
+        print(temp_df.info())
+        temp_df = temp_df.loc[['매출액', '매출총이익', '영업이익', '당기순이익']]
 
         temp_df2 = fs_tables[2]
         temp_df2 = temp_df2.set_index(temp_df2.columns[0])
@@ -363,3 +399,82 @@ class MagicUtil:
         else:
             strategy_date = str(temp_year - 1) + '/12'
         return strategy_date
+
+    @staticmethod
+    def crawalConsensus(firm_code):
+        json_url = 'https://comp.fnguide.com/SVO2/json/data/01_06/03_' + firm_code + '.json'
+        r = requests.get(json_url)
+        r.encoding = 'utf-8-sig'
+        return r.json()
+
+    def crawalSvdMain(self, code):
+        print('code', code)
+        sCode = MagicUtil.make_code(code)
+        url = f"http://comp.fnguide.com/SVO2/ASP/SVD_main.asp?pGB=1&gicode={sCode}"
+        page = requests.get(url)
+        # tables = pd.read_html(page.text)
+
+        try:
+            tables = pd.read_html(page.text, match='(보통주/ 우선주)', header=0, encoding='utf-8')
+            # 종가, 최고가, 수익률, 시가총액, 발생주식수(보통주 / 우선주)
+            self.crawalSvdMainShares(code, tables[0])
+        except ValueError:
+            pass
+        finally:
+            pass
+
+        try:
+            tables = pd.read_html(page.text, match='투자의견', header=0, encoding='utf-8')
+            # 투자의견, 목표주가, EPS, PER, 추정기관수
+            self.crawalSvdMainRecom(code, tables[0])
+        except ValueError:
+            pass
+        finally:
+            pass
+
+        try:
+            tables = pd.read_html(page.text, match='컨센서스, 추정치', encoding='utf-8')
+             # print(tables[10]) # 매출액, 영업이익, 당기순이익, 지배주주순이익, 자본총계, 자본금, 부채비율, 유보율, ROA, ROE, EPS, BPS, DPS, PER, PBR, 발행주식수
+            self.crawalSvdMainFinancial(code, tables[0])
+        except ValueError:
+            pass
+        finally:
+            pass
+
+
+    def crawalSvdMainShares(self, code, df):
+        """
+        종가, 최고가, 수익률, 시가총액, 발생주식수(보통주 / 우선주)
+        :param code:
+        :param df:
+        :return:
+        """
+        stock_amt = df.iloc[5, 1]
+        total_shares = stock_amt.split("/")[0]
+        total_shares = total_shares.replace(",", "")
+        self.mysql.updateCorpTotalShares(code, total_shares)
+
+    def crawalSvdMainRecom(self, code, df):
+        """
+        # 투자의견, 목표주가, EPS, PER, 추정기관수
+        :param code:
+        :param df:
+        :return:
+        """
+        self.mysql.updateCorpRecom(code, df)
+
+    def crawalSvdMainFinancial(self, code, df):
+        """
+        매출액, 영업이익, 당기순이익, 지배주주순이익, 자본총계, 자본금, 부채비율, 유보율, ROA, ROE, EPS, BPS, DPS, PER, PBR, 발생주식수
+        :param code:
+        :param df:
+        :return:
+        """
+
+        temp_df = df.set_index(df.columns[0])
+        temp_df = temp_df[temp_df.columns[:25]]
+        for idx, column in temp_df.iteritems():
+            self.mysql.financeinfoFnguideFinancial(code, idx, column)
+
+
+

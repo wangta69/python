@@ -1,12 +1,13 @@
 import requests
 import time
 from utils_magic import MagicUtil
-from connMysql import Mysql
+from stock_crawler.connMysql import Mysql
 
-class Quant():
+class Fnguide():
     def __init__(self, parent=None):
         super().__init__()
         self.mysql = Mysql()
+        self.util = MagicUtil()
 
     # 재무제표데이터
     def createFinancialStatements(self):
@@ -18,7 +19,6 @@ class Quant():
         for row in corporations:
             # 기존코드에서 A를 추가한 총 7자리 코드를 만든다(comp.fnguide.com)
             code = MagicUtil.make_code(row['code'])
-
             try:
                 time.sleep(0.1)
                 try:
@@ -32,10 +32,22 @@ class Quant():
                     self.mysql.updateFinancialStatements(trimcode, idx, column)
             except ValueError as e:
                 print('I got a ValueError - reason "%s"' % str(e))
+                print('At Code : ' + row['code'])
                 continue
             except KeyError as e:
                 print('I got a KeyError - reason "%s"' % str(e))
+                print('At Code : ' + row['code'])
                 continue
+
+    # 재무제표데이터
+    def createFinancialStatementsTest(self, code):
+        """
+        포괄 손익계산서, 재무상태료, 현금흐름표를 구함
+        :return:
+        """
+        fs_df = MagicUtil.make_fs_dataframe_test(code)
+        print(fs_df)
+
 
     # 재무비율데이터
     def createFinancialRatio(self):
@@ -94,13 +106,13 @@ class Quant():
                 continue
 
     # # 재무제표데이터
-    # def createFinancialStatementsToDB(self, code):
-    #     fs_df = MagicUtil.make_fs_dataframe(code)
-    #     for idx, column in fs_df.iteritems():
-    #         # print('idx', idx)
-    #         # print(column)
-    #         trimcode = code.replace('A', '')
-    #         self.mysql.updateFinancialStatements(trimcode, idx, column)
+    def createFinancialStatementsToDB(self, code):
+        fs_df = MagicUtil.make_fs_dataframe(code)
+        for idx, column in fs_df.iteritems():
+            # print('idx', idx)
+            # print(column)
+            trimcode = code.replace('A', '')
+            # self.mysql.updateFinancialStatements(trimcode, idx, column)
     #
     # # 재무비율데이터
     # def createFinancialRatioToDB(self, code):
@@ -122,10 +134,58 @@ class Quant():
     #         self.mysql.updateInvestmentIndiators(trimcode, idx, column)
     #     pass
 
-quant = Quant()
-# quant.createFinancialStatementsToDB('A004840')
-# quant.createFinancialRatioToDB('A004840')
-# quant.createInvestmentIndiatorsToDB('A004840')
-# quant.createFinancialStatements()
-# quant.createFinancialRatio()
-# quant.createInvestmentIndiators()
+    # 증권사별 적정주가 & 투자의견
+    def crawlingConsensus(self):
+        corporations = self.mysql.corporations()
+
+        for row in corporations:
+            code = MagicUtil.make_code(row['code'])
+            result = MagicUtil.crawalConsensus(code)
+            if len(result['comp']) > 0:
+                self.mysql.deleteConsensusEstimate(row['code'])
+                for r in result['comp']:
+                    print(r)
+                    self.mysql.updateConsensusEstimate(row['code'], r)
+
+
+        pass
+
+        #
+        pass
+
+    def crawalSvdMainTest(self, code):
+
+        result = self.util.crawalSvdMain(code)
+        pass
+
+    def crawalSvdMain(self):
+        corporations = self.mysql.corporations()
+        for row in corporations:
+            self.util.crawalSvdMain(row['code'])
+
+
+
+
+
+
+if __name__ == "__main__":
+    fnguide = Fnguide()
+    # fnguide.createFinancialStatementsToDB('A386580')
+    # fnguide.createFinancialRatioToDB('A004840')
+    # fnguide.createInvestmentIndiatorsToDB('A004840')
+    # fnguide.createFinancialStatementsTest('A005930')
+    # fnguide.crawalSvdMainTest('204210')
+    # fnguide.crawalSvdMainTest('005930')
+    # fnguide.crawalSvdMainTest('088980')
+
+
+
+    # fnguide.createFinancialStatements()
+    # fnguide.createFinancialRatio()
+    # fnguide.createInvestmentIndiators()
+    # fnguide.crawlingConsensus()
+    fnguide.crawalSvdMain()
+
+
+
+

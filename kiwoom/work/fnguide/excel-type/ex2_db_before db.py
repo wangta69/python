@@ -12,7 +12,7 @@ invest_df = MagicUtil.get_finance_data(invest_path)
 pd.set_option('chained', None)
 
 # momentum
-price_path = r'D:/work/stock/quant/가격데이터.xlsx'
+price_path = r'D:/work/stock/fnguide/가격데이터.xlsx'
 #price_df = pd.read_excel(price_path, index_col=0)
 
 # 저평가 데이터프레임과 F-score 데이터프레임 만들기 (CH4. 전략 구현하기.ipynb)

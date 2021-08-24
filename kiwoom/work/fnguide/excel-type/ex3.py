@@ -2,10 +2,10 @@ from utils_magic import MagicUtil
 import pandas as pd
 import matplotlib.pyplot as plt
 
-fs_path = r'D:/work/stock/quant/재무제표데이터_2018.xlsx'
-fr_path = r'D:/work/stock/quant/재무비율데이터_2018.xlsx'
-invest_path = r'D:/work/stock/quant/투자지표데이터_2018.xlsx'
-price_path = r'D:/work/stock/quant/가격데이터.xlsx'
+fs_path = r'D:/work/stock/fnguide/재무제표데이터_2018.xlsx'
+fr_path = r'D:/work/stock/fnguide/재무비율데이터_2018.xlsx'
+invest_path = r'D:/work/stock/fnguide/투자지표데이터_2018.xlsx'
+price_path = r'D:/work/stock/fnguide/가격데이터.xlsx'
 
 fs_df = MagicUtil.get_finance_data(fs_path)
 fr_df = MagicUtil.get_finance_data(fr_path)

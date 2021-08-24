@@ -3,13 +3,13 @@
 
 
 2. roa, roic 등을 구하고 per, pcr, psr, pbr 등을 구해 재무적으로 단단한 업체들을 고른다. (comp.fnguide.com 에서 제공하는 데이타 가져옮)
-    quant > db-type > ex1.py
+    fnguide > db-type > ex1.py
       # 포괄 손익계산서, 재무상태료, 현금흐름표를 구함
-    - quant.createFinancialStatements()
+    - fnguide.createFinancialStatements()
       # 유동비율, 부채비율, 영업이익율 roa, roic 등을 구함
-    - quant.createFinancialRatio()
+    - fnguide.createFinancialRatio()
        # 투자지표를 구한다. (per, pcr, psr, pbr, 총현금흐름)
-    - quant.createInvestmentIndiators()
+    - fnguide.createInvestmentIndiators()
 
     종합점수를 계산한다.
     # pbr, per, pcr, psr에 대한 순위를 매긴다.
