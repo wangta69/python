@@ -77,6 +77,23 @@ class Fnguide():
                 print('I got a KeyError - reason "%s"' % str(e))
                 continue
 
+    # 재무비율데이터
+    def createFinancialRatioTest(self, code):
+        """
+        유동비율, 부채비율, 영업이익율 roa, roic 등을 구함
+        :return:
+        """
+
+
+        fr_df = MagicUtil.make_fr_dataframe(code)
+        print("fr_df", fr_df)
+
+        for idx, column in fr_df.iteritems():
+            trimcode = code.replace('A', '')
+            # self.mysql.updateFinancialRatio(trimcode, idx, column)
+
+
+
     # 투자지표데이터
     def createInvestmentIndiators(self):
         """
@@ -162,8 +179,8 @@ fnguide = Fnguide()
 # fnguide.createFinancialRatioToDB('A004840')
 # fnguide.createInvestmentIndiatorsToDB('A004840')
 # fnguide.createFinancialStatementsTest('A005930')
-fnguide.test('A005930')
-
+# fnguide.test('A005930')
+fnguide.createFinancialRatioTest('A005930')
 
 # fnguide.createFinancialStatements()
 # fnguide.createFinancialRatio()

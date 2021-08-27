@@ -60,11 +60,26 @@ def get_disparity(code, k, w=1):
         disparity = None
     return disparity, cur_price, est_price, shares, value, net_worth, roe, excess_earning
 
-#
+def cal3YearRoe(roe):
+    l = len(roe)
+    print(roe)
+    print('length', l)
+    if l == 3:
+        if roe[0] <= roe[1] <= roe[2] or roe[0] >= roe[1] >= roe[2]:
+            roe = roe[2]
+        else:
+            roe = (roe[0] + roe[1] * 2 + roe[2] * 3) / 6     # weighting average
+        return roe
+    elif l > 0:
+        return roe[l-1]
+    else:
+        return 0
+
 # if __name__ == "__main__":
 #     k = reader.get_5years_earning_rate()
 #
-#     #price_w = estimate_price("005930")
+    # price_w = estimate_price("005930")
+    # print('price_w', price_w)
 #     #price_w_10 = estimate_price("005930", w=0.9)
 #     #price_w_20 = estimate_price("005930", w=0.8)
 #     #k = reader.get_5years_earning_rate()

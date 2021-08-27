@@ -31,13 +31,14 @@ class SrimClass():
 
     def test(self):
         k = get_5years_earning_rate()
+        print('k', k)
         price0 = estimate_price('005930', k)
         print(price0)
         pass
 
 srimc = SrimClass()
-srimc.updatePrice()
-# srimc.test()
+# srimc.updatePrice()
+srimc.test()
 
 # s-rim
 # 1. BBB- 등급의  5년채 수익률을 가져온다.

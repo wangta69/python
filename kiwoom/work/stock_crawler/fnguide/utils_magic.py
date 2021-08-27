@@ -55,22 +55,22 @@ class MagicUtil:
         return magic_rank
 
     # 마법공식 pandas
-    def magic_by_pd(self, path):
-        per_data = pd.read_excel(path, sheet_name='PER', index_col=0)
-        filtered_per = per_data[per_data['PER'] > 0]
-        sorted_per = filtered_per.sort_values(by='PER')
-        sorted_per['PER랭킹'] = sorted_per['PER'].rank()
-
-        roa_data = pd.read_excel(path, sheet_name='ROA', index_col=0)
-        filtered_roa = roa_data.dropna()
-        filtered_roa.columns = ['ROA']
-        sorted_roa = filtered_roa.sort_values(by='ROA', ascending=False)
-        sorted_roa['ROA랭킹'] = sorted_roa.rank(ascending=False)
-
-        total_df = pd.merge(sorted_per, sorted_roa, how='inner', left_index=True, right_index=True)
-
-        total_df['종합랭크'] = (total_df['PER랭킹'] + total_df['ROA랭킹']).rank()
-        return total_df.sort_values(by='종합랭크')
+    # def magic_by_pd(self, path):
+    #     per_data = pd.read_excel(path, sheet_name='PER', index_col=0)
+    #     filtered_per = per_data[per_data['PER'] > 0]
+    #     sorted_per = filtered_per.sort_values(by='PER')
+    #     sorted_per['PER랭킹'] = sorted_per['PER'].rank()
+    #
+    #     roa_data = pd.read_excel(path, sheet_name='ROA', index_col=0)
+    #     filtered_roa = roa_data.dropna()
+    #     filtered_roa.columns = ['ROA']
+    #     sorted_roa = filtered_roa.sort_values(by='ROA', ascending=False)
+    #     sorted_roa['ROA랭킹'] = sorted_roa.rank(ascending=False)
+    #
+    #     total_df = pd.merge(sorted_per, sorted_roa, how='inner', left_index=True, right_index=True)
+    #
+    #     total_df['종합랭크'] = (total_df['PER랭킹'] + total_df['ROA랭킹']).rank()
+    #     return total_df.sort_values(by='종합랭크')
 
     def make_price_dataframe(self, code, timeframe, count):
         url = 'https://fchart.stock.naver.com/sise.nhn?requestType=0'
@@ -130,99 +130,22 @@ class MagicUtil:
         total_price.index = pd.to_datetime(total_price.index)
         total_price.to_excel(outpath + '.xlsx')
 
-    # 포괄손익계산서, 재무상태표, 현금흐름표
-    @staticmethod
-    def make_fs_dataframe(firm_code):
-        # fs_tables[0] # 포괄손익계산서 연간 #fs_tables[1] # 포괄손익계산서 분기
-        # fs_tables[2] # 재무상태표 연간 #fs_tables[3] # 재무상태표 분기
-        # fs_tables[4] # 현금흐름표 연간 #fs_tables[5] # 현금흐름표 분기
-        fs_url = 'https://comp.fnguide.com/SVO2/asp/SVD_Finance.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=103&stkGb=701&gicode=' + firm_code
-        # fs_page = requests.get(fs_url)
-        # fs_tables = pd.read_html(fs_page.text)
-        fs_tables = pd.read_html(fs_url)
-        temp_df = fs_tables[0]
-
-        temp_df = temp_df.set_index(temp_df.columns[0])
-        temp_df = temp_df[temp_df.columns[:4]]
-        temp_df = temp_df.loc[['매출액', '매출총이익', '영업이익', '당기순이익']]
-
-        temp_df2 = fs_tables[2]
-        temp_df2 = temp_df2.set_index(temp_df2.columns[0])
-        temp_df2 = temp_df2.loc[['자산', '부채', '자본']]
-
-        temp_df3 = fs_tables[4]
-        temp_df3 = temp_df3.set_index(temp_df3.columns[0])
-        temp_df3 = temp_df3.loc[['영업활동으로인한현금흐름']]
-
-        fs_df = pd.concat([temp_df, temp_df2, temp_df3])
-
-        return fs_df
-
-    def make_fs_dataframe_test(firm_code):
-        # fs_tables[0] # 포괄손익계산서 연간 #fs_tables[1] # 포괄손익계산서 분기
-        # fs_tables[2] # 재무상태표 연간 #fs_tables[3] # 재무상태표 분기
-        # fs_tables[4] # 현금흐름표 연간 #fs_tables[5] # 현금흐름표 분기
-        fs_url = 'https://comp.fnguide.com/SVO2/asp/SVD_Finance.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=103&stkGb=701&gicode=' + firm_code
-        # fs_page = requests.get(fs_url)
-        # fs_tables = pd.read_html(fs_page.text)
-        fs_tables = pd.read_html(fs_url)
-        temp_df = fs_tables[0]
-
-
-
-        temp_df = temp_df.set_index(temp_df.columns[0])
-        temp_df = temp_df[temp_df.columns[:4]]
-        # print(temp_df)
-        # return
-        print(temp_df.info())
-        temp_df = temp_df.loc[['매출액', '매출총이익', '영업이익', '당기순이익']]
-
-        temp_df2 = fs_tables[2]
-        temp_df2 = temp_df2.set_index(temp_df2.columns[0])
-        temp_df2 = temp_df2.loc[['자산', '부채', '자본']]
-
-        temp_df3 = fs_tables[4]
-        temp_df3 = temp_df3.set_index(temp_df3.columns[0])
-        temp_df3 = temp_df3.loc[['영업활동으로인한현금흐름']]
-
-        fs_df = pd.concat([temp_df, temp_df2, temp_df3])
-
-        return fs_df
 
     # code, dataframe -> total df merge
-    @staticmethod
-    def change_df(firm_code, dataframe):
-        for num, col in enumerate(dataframe.columns):
-            temp_df = pd.DataFrame({firm_code: dataframe[col]})
-            temp_df = temp_df.T
-            temp_df.columns = [[col] * len(dataframe), temp_df.columns]
-            if num == 0:
-                total_df = temp_df
-            else:
-                total_df = pd.merge(total_df, temp_df, how='outer', left_index=True, right_index=True)
+    # @staticmethod
+    # def change_df(firm_code, dataframe):
+    #     for num, col in enumerate(dataframe.columns):
+    #         temp_df = pd.DataFrame({firm_code: dataframe[col]})
+    #         temp_df = temp_df.T
+    #         temp_df.columns = [[col] * len(dataframe), temp_df.columns]
+    #         if num == 0:
+    #             total_df = temp_df
+    #         else:
+    #             total_df = pd.merge(total_df, temp_df, how='outer', left_index=True, right_index=True)
+    #
+    #     return total_df
 
-        return total_df
 
-    # 재무 비율 df
-    @staticmethod
-    def make_fr_dataframe(firm_code):
-        fr_url = 'https://comp.fnguide.com/SVO2/asp/SVD_FinanceRatio.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=104&stkGb=701&gicode=' + firm_code
-        # fr_page = requests.get(fr_url)
-        # fr_tables = pd.read_html(fr_page.text)
-        fr_tables = pd.read_html(fr_url)
-        temp_df = fr_tables[0]
-
-        # print('temp_df.columns[0]', temp_df.columns[0])
-        temp_df = temp_df.set_index(temp_df.columns[0])
-        temp_df = temp_df.loc[['유동비율계산에 참여한 계정 펼치기',  # 유동비율(유동자산 / 유동부채) * 100
-                               '부채비율계산에 참여한 계정 펼치기',  # 부채비율(총부채 / 총자본) * 100
-                               '영업이익률계산에 참여한 계정 펼치기',  # 영업이익률(영업이익 / 영업수익) * 100
-                               'ROA계산에 참여한 계정 펼치기',  # ROA(당기순이익(연율화) / 총자산(평균)) * 100
-                               'ROIC계산에 참여한 계정 펼치기']]  # ROIC(세후영업이익(연율화)/영업투하자본(평균))*100
-        temp_df.index = ['유동비율', '부채비율', '영업이익률', 'ROA', 'ROIC']
-        # return temp_df
-
-        return temp_df.astype('float64')
 
     # [코드 3.23] 투자지표 데이터프레임을 만드는 함수 (CH3. 데이터 수집하기.ipynb)
     @staticmethod
@@ -267,19 +190,19 @@ class MagicUtil:
         else:
             return x
 
-    # PER기준으로 오름차순으로 정렬하여 주는 함수
-    @staticmethod
-    def low_per(invest_df, index_date, num):
-        invest_df[(index_date, 'PER')] = pd.to_numeric(invest_df[(index_date, 'PER')])
-        per_sorted = invest_df.sort_values(by=(index_date, 'PER'))
-        return per_sorted[index_date][:num]
-
-    # ROA기준으로 내림차순으로 정렬하여 주는 함수
-    def high_roa(self, fr_df, index_date, num):
-        fr_df[(index_date, 'ROA')] = fr_df[(index_date, 'ROA')].apply(self.check_IFRS)
-        fr_df[(index_date, 'ROA')] = pd.to_numeric(fr_df[(index_date, 'ROA')] )
-        sorted_roa = fr_df.sort_values(by=(index_date, 'ROA'), ascending=False)
-        return sorted_roa[index_date][:num]
+    # # PER기준으로 오름차순으로 정렬하여 주는 함수
+    # @staticmethod
+    # def low_per(invest_df, index_date, num):
+    #     invest_df[(index_date, 'PER')] = pd.to_numeric(invest_df[(index_date, 'PER')])
+    #     per_sorted = invest_df.sort_values(by=(index_date, 'PER'))
+    #     return per_sorted[index_date][:num]
+    #
+    # # ROA기준으로 내림차순으로 정렬하여 주는 함수
+    # def high_roa(self, fr_df, index_date, num):
+    #     fr_df[(index_date, 'ROA')] = fr_df[(index_date, 'ROA')].apply(self.check_IFRS)
+    #     fr_df[(index_date, 'ROA')] = pd.to_numeric(fr_df[(index_date, 'ROA')] )
+    #     sorted_roa = fr_df.sort_values(by=(index_date, 'ROA'), ascending=False)
+    #     return sorted_roa[index_date][:num]
 
     # 마법공식 함수로 만들기
     def magic_formula(self, fr_df, invest_df, index_date, num):
@@ -322,16 +245,16 @@ class MagicUtil:
     # r = make_value_combo(['PER', 'PBR', 'PSR', 'PCR'], invest_df, '2015/12', 20)
 
     # F-score 함수
-    @staticmethod
-    def get_fscore(fs_df, index_date, num):
-        # pd.set_option('chained', None)
-        fscore_df = fs_df[index_date]
-        fscore_df['당기순이익점수'] = fscore_df['당기순이익'] > 0
-        fscore_df['영업활동점수'] = fscore_df['영업활동으로인한현금흐름'] > 0
-        fscore_df['더큰영업활동점수'] = fscore_df['영업활동으로인한현금흐름'] > fscore_df['당기순이익']
-        fscore_df['종합점수'] = fscore_df[['당기순이익점수', '영업활동점수', '더큰영업활동점수']].sum(axis=1)
-        fscore_df = fscore_df[fscore_df['종합점수'] == 3]
-        return fscore_df[:num]
+    # @staticmethod
+    # def get_fscore(fs_df, index_date, num):
+    #     # pd.set_option('chained', None)
+    #     fscore_df = fs_df[index_date]
+    #     fscore_df['당기순이익점수'] = fscore_df['당기순이익'] > 0
+    #     fscore_df['영업활동점수'] = fscore_df['영업활동으로인한현금흐름'] > 0
+    #     fscore_df['더큰영업활동점수'] = fscore_df['영업활동으로인한현금흐름'] > fscore_df['당기순이익']
+    #     fscore_df['종합점수'] = fscore_df[['당기순이익점수', '영업활동점수', '더큰영업활동점수']].sum(axis=1)
+    #     fscore_df = fscore_df[fscore_df['종합점수'] == 3]
+    #     return fscore_df[:num]
     #print(get_fscore(fs_df, '2018/12', 10))
 
     # 모멘텀 데이터프레임 만들기 함수화
@@ -354,28 +277,28 @@ class MagicUtil:
     #print(get_value_quality(invest_df, fs_df, '2015/12', 20))
 
     # 백테스트 함수 버젼1
-    def backtest_beta(self, price_df, strategy_df, start_date, end_date, initial_money):
-        code_list = []
-        for code in strategy_df.index:
-            code_list.append(code.replace('A', ''))
-        strategy_price = price_df[code_list][start_date:end_date]
-        pf_stock_num = {}
-        stock_amount = 0
-        stock_pf = 0
-        each_money = initial_money / len(strategy_df)
-        for code in strategy_price.columns:
-            #strategy_price.fillna(1, inplace=True)  # 수정 code
-            temp = int(each_money / strategy_price[code][0])
-            pf_stock_num[code] = temp
-            stock_amount = stock_amount + temp * strategy_price[code][0]
-            stock_pf = stock_pf + strategy_price[code] * pf_stock_num[code]
-        cash_amount = initial_money - stock_amount
-        backtest_df = pd.DataFrame({'주식포트폴리오': stock_pf})
-        backtest_df['현금포트폴리오'] = [cash_amount] * len(backtest_df)
-        backtest_df['종합포트폴리오'] = backtest_df['주식포트폴리오'] + backtest_df['현금포트폴리오']
-        backtest_df['일변화율'] = backtest_df['종합포트폴리오'].pct_change()
-        backtest_df['총변화율'] = backtest_df['종합포트폴리오'] / initial_money - 1
-        return backtest_df
+    # def backtest_beta(self, price_df, strategy_df, start_date, end_date, initial_money):
+    #     code_list = []
+    #     for code in strategy_df.index:
+    #         code_list.append(code.replace('A', ''))
+    #     strategy_price = price_df[code_list][start_date:end_date]
+    #     pf_stock_num = {}
+    #     stock_amount = 0
+    #     stock_pf = 0
+    #     each_money = initial_money / len(strategy_df)
+    #     for code in strategy_price.columns:
+    #         #strategy_price.fillna(1, inplace=True)  # 수정 code
+    #         temp = int(each_money / strategy_price[code][0])
+    #         pf_stock_num[code] = temp
+    #         stock_amount = stock_amount + temp * strategy_price[code][0]
+    #         stock_pf = stock_pf + strategy_price[code] * pf_stock_num[code]
+    #     cash_amount = initial_money - stock_amount
+    #     backtest_df = pd.DataFrame({'주식포트폴리오': stock_pf})
+    #     backtest_df['현금포트폴리오'] = [cash_amount] * len(backtest_df)
+    #     backtest_df['종합포트폴리오'] = backtest_df['주식포트폴리오'] + backtest_df['현금포트폴리오']
+    #     backtest_df['일변화율'] = backtest_df['종합포트폴리오'].pct_change()
+    #     backtest_df['총변화율'] = backtest_df['종합포트폴리오'] / initial_money - 1
+    #     return backtest_df
 
     # 해당 날짜에 가격이 없으면 투자 관련 데이터에서 해당 종목 없애는 함수
     # get_value_rank 저PER 종목 037030 종목이 2016년 6월 데이터가 없음
@@ -400,15 +323,13 @@ class MagicUtil:
             strategy_date = str(temp_year - 1) + '/12'
         return strategy_date
 
-    @staticmethod
-    def crawalConsensus(firm_code):
+    def crawalConsensus(self, firm_code):
         json_url = 'https://comp.fnguide.com/SVO2/json/data/01_06/03_' + firm_code + '.json'
         r = requests.get(json_url)
         r.encoding = 'utf-8-sig'
         return r.json()
 
     def crawalSvdMain(self, code):
-        print('code', code)
         sCode = MagicUtil.make_code(code)
         url = f"http://comp.fnguide.com/SVO2/ASP/SVD_main.asp?pGB=1&gicode={sCode}"
         page = requests.get(url)
@@ -418,8 +339,8 @@ class MagicUtil:
             tables = pd.read_html(page.text, match='(보통주/ 우선주)', header=0, encoding='utf-8')
             # 종가, 최고가, 수익률, 시가총액, 발생주식수(보통주 / 우선주)
             self.crawalSvdMainShares(code, tables[0])
-        except ValueError:
-            pass
+        except ValueError as e:
+            print('I got a ValueError - reason "%s"' % str(e))
         finally:
             pass
 
@@ -427,8 +348,8 @@ class MagicUtil:
             tables = pd.read_html(page.text, match='투자의견', header=0, encoding='utf-8')
             # 투자의견, 목표주가, EPS, PER, 추정기관수
             self.crawalSvdMainRecom(code, tables[0])
-        except ValueError:
-            pass
+        except ValueError as e:
+            print('I got a ValueError - reason "%s"' % str(e))
         finally:
             pass
 
@@ -436,8 +357,8 @@ class MagicUtil:
             tables = pd.read_html(page.text, match='컨센서스, 추정치', encoding='utf-8')
              # print(tables[10]) # 매출액, 영업이익, 당기순이익, 지배주주순이익, 자본총계, 자본금, 부채비율, 유보율, ROA, ROE, EPS, BPS, DPS, PER, PBR, 발행주식수
             self.crawalSvdMainFinancial(code, tables[0])
-        except ValueError:
-            pass
+        except ValueError as e:
+            print('I got a ValueError - reason "%s"' % str(e))
         finally:
             pass
 
@@ -456,7 +377,7 @@ class MagicUtil:
 
     def crawalSvdMainRecom(self, code, df):
         """
-        # 투자의견, 목표주가, EPS, PER, 추정기관수
+        # 투자의견, 목표주가, EPS(목표), PER(목표), 추정기관수
         :param code:
         :param df:
         :return:
@@ -475,6 +396,83 @@ class MagicUtil:
         temp_df = temp_df[temp_df.columns[:25]]
         for idx, column in temp_df.iteritems():
             self.mysql.financeinfoFnguideFinancial(code, idx, column)
+
+    # 재무 비율 df
+    def crawalSvdFinanceRatio(self, code):
+        sCode = MagicUtil.make_code(code)
+        url = 'https://comp.fnguide.com/SVO2/asp/SVD_FinanceRatio.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=104&stkGb=701&gicode=' + sCode
+        # fr_page = requests.get(fr_url)
+        # fr_tables = pd.read_html(fr_page.text)
+        fr_tables = pd.read_html(url)
+        temp_df = fr_tables[0]
+        try:
+            # print('temp_df.columns[0]', temp_df.columns[0])
+            temp_df = temp_df.set_index(temp_df.columns[0])
+            temp_df = temp_df.loc[['유동비율계산에 참여한 계정 펼치기',  # 유동비율(유동자산 / 유동부채) * 100
+                                   '부채비율계산에 참여한 계정 펼치기',  # 부채비율(총부채 / 총자본) * 100
+                                   '영업이익률계산에 참여한 계정 펼치기',  # 영업이익률(영업이익 / 영업수익) * 100
+                                   'ROA계산에 참여한 계정 펼치기',  # ROA(당기순이익(연율화) / 총자산(평균)) * 100
+                                   'ROIC계산에 참여한 계정 펼치기']]  # ROIC(세후영업이익(연율화)/영업투하자본(평균))*100
+            temp_df.index = ['유동비율', '부채비율', '영업이익률', 'ROA', 'ROIC']
+            # return temp_df
+
+            fs_df = temp_df.astype('float64')
+            for yyyymm, column in fs_df.iteritems():
+                self.mysql.updateFinancialRatio(code, yyyymm, column)
+        except ValueError as e:
+            print('I got a ValueError - reason "%s"' % str(e))
+        except KeyError as e:
+            print('I got a KeyError - reason "%s"' % str(e))
+        finally:
+            pass
+
+    # 포괄손익계산서, 재무상태표, 현금흐름표
+    def crawalSvdFinance(self, code):
+        # fs_tables[0] # 포괄손익계산서 연간 #fs_tables[1] # 포괄손익계산서 분기
+        # fs_tables[2] # 재무상태표 연간 #fs_tables[3] # 재무상태표 분기
+        # fs_tables[4] # 현금흐름표 연간 #fs_tables[5] # 현금흐름표 분기
+        sCode = MagicUtil.make_code(code)
+        fs_url = 'https://comp.fnguide.com/SVO2/asp/SVD_Finance.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=103&stkGb=701&gicode=' + sCode
+
+        print('fs_url', fs_url)
+        # fs_page = requests.get(fs_url)
+        # fs_tables = pd.read_html(fs_page.text)
+        fs_tables = pd.read_html(fs_url)
+        temp_df = fs_tables[0]  # 포괄손익계산서 연간 #fs_tables[1] # 포괄손익계산서 분기
+        try:
+
+            temp_df = temp_df.set_index(temp_df.columns[0])
+            temp_df = temp_df[temp_df.columns[:4]]
+            temp_df = temp_df.loc[['매출액', '매출총이익', '영업이익', '당기순이익']]
+        except KeyError as e:
+            print('I got a KeyError - reason "%s"' % str(e))
+        finally:
+            pass
+
+        temp_df2 = fs_tables[2]  # 재무상태표 연간 #fs_tables[3] # 재무상태표 분기
+        try:
+
+            temp_df2 = temp_df2.set_index(temp_df2.columns[0])
+            temp_df2 = temp_df2.loc[['자산', '부채', '자본']]
+        except KeyError as e:
+            print('I got a KeyError - reason "%s"' % str(e))
+        finally:
+            pass
+
+        temp_df3 = fs_tables[4]  # 현금흐름표 연간 #fs_tables[5] # 현금흐름표 분기
+        try:
+            temp_df3 = temp_df3.set_index(temp_df3.columns[0])
+            temp_df3 = temp_df3.loc[['영업활동으로인한현금흐름']]
+        except KeyError as e:
+            print('I got a KeyError - reason "%s"' % str(e))
+        finally:
+            pass
+
+        fs_df = pd.concat([temp_df, temp_df2, temp_df3])
+
+        for yyyymm, column in fs_df.iteritems():
+            self.mysql.updateFinancialStatements(code, yyyymm, column)
+
 
 
 

@@ -206,6 +206,11 @@ class MagicUtil:
     # 재무 비율 df
     @staticmethod
     def make_fr_dataframe(firm_code):
+        """
+        분기는 누적 데이타
+        :param firm_code: 
+        :return: 
+        """
         fr_url = 'https://comp.fnguide.com/SVO2/asp/SVD_FinanceRatio.asp?pGB=1&cID=&MenuYn=Y&ReportGB=D&NewMenuID=104&stkGb=701&gicode=' + firm_code
         # fr_page = requests.get(fr_url)
         # fr_tables = pd.read_html(fr_page.text)

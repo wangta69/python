@@ -101,6 +101,8 @@ def get_current_price(code):
     selector = "#svdMainChartTxt11"
     return get_element_by_css_selector(url, selector)
 
+
+
 #
 # if __name__ == "__main__":
 #     #print(get_5years_earning_rate())

@@ -40,42 +40,42 @@ class Fnguide():
                 continue
 
     # 재무제표데이터
-    def createFinancialStatementsTest(self, code):
-        """
-        포괄 손익계산서, 재무상태료, 현금흐름표를 구함
-        :return:
-        """
-        fs_df = MagicUtil.make_fs_dataframe_test(code)
-        print(fs_df)
+    # def createFinancialStatementsTest(self, code):
+    #     """
+    #     포괄 손익계산서, 재무상태료, 현금흐름표를 구함
+    #     :return:
+    #     """
+    #     fs_df = MagicUtil.make_fs_dataframe_test(code)
+    #     print(fs_df)
 
 
     # 재무비율데이터
-    def createFinancialRatio(self):
-        """
-        유동비율, 부채비율, 영업이익율 roa, roic 등을 구함
-        :return:
-        """
-        corporations = self.mysql.corporations()
-
-        for row in corporations:
-            code = MagicUtil.make_code(row['code'])
-            try:
-                time.sleep(0.1)
-                try:
-                    fr_df = MagicUtil.make_fr_dataframe(code)
-                except requests.exceptions.Timeout:
-                    time.sleep(10)
-                    fr_df = MagicUtil.make_fr_dataframe(code)
-
-                for idx, column in fr_df.iteritems():
-                    trimcode = code.replace('A', '')
-                    self.mysql.updateFinancialRatio(trimcode, idx, column)
-            except ValueError as e:
-                print('I got a ValueError - reason "%s"' % str(e))
-                continue
-            except KeyError as e:
-                print('I got a KeyError - reason "%s"' % str(e))
-                continue
+    # def createFinancialRatio(self):
+    #     """
+    #     유동비율, 부채비율, 영업이익율 roa, roic 등을 구함
+    #     :return:
+    #     """
+    #     corporations = self.mysql.corporations()
+    #
+    #     for row in corporations:
+    #         code = MagicUtil.make_code(row['code'])
+    #         try:
+    #             time.sleep(0.1)
+    #             try:
+    #                 fr_df = MagicUtil.make_fr_dataframe(code)
+    #             except requests.exceptions.Timeout:
+    #                 time.sleep(10)
+    #                 fr_df = MagicUtil.make_fr_dataframe(code)
+    #
+    #             for idx, column in fr_df.iteritems():
+    #                 trimcode = code.replace('A', '')
+    #                 self.mysql.updateFinancialRatio(trimcode, idx, column)
+    #         except ValueError as e:
+    #             print('I got a ValueError - reason "%s"' % str(e))
+    #             continue
+    #         except KeyError as e:
+    #             print('I got a KeyError - reason "%s"' % str(e))
+    #             continue
 
     # 투자지표데이터
     def createInvestmentIndiators(self):
@@ -106,13 +106,13 @@ class Fnguide():
                 continue
 
     # # 재무제표데이터
-    def createFinancialStatementsToDB(self, code):
-        fs_df = MagicUtil.make_fs_dataframe(code)
-        for idx, column in fs_df.iteritems():
-            # print('idx', idx)
-            # print(column)
-            trimcode = code.replace('A', '')
-            # self.mysql.updateFinancialStatements(trimcode, idx, column)
+    # def createFinancialStatementsToDB(self, code):
+    #     fs_df = MagicUtil.make_fs_dataframe(code)
+    #     for idx, column in fs_df.iteritems():
+    #         # print('idx', idx)
+    #         # print(column)
+    #         trimcode = code.replace('A', '')
+    #         # self.mysql.updateFinancialStatements(trimcode, idx, column)
     #
     # # 재무비율데이터
     # def createFinancialRatioToDB(self, code):
@@ -150,33 +150,69 @@ class Fnguide():
 
         pass
 
-        #
-        pass
 
-    def crawalSvdMainTest(self, code):
+    def crawalSvdMain(self, code=None):
+        """
+        종가, 최고가, 수익률, 시가총액, 발생주식수(보통주 / 우선주)
+        투자의견, 목표주가, EPS, PER, 추정기관수
+        매출액, 영업이익, 당기순이익, 지배주주순이익, 자본총계, 자본금, 부채비율, 유보율, ROA, ROE, EPS, BPS, DPS, PER, PBR, 발생주식수
+        :param code:
+        :return:
+        """
+        if code:
+            self.util.crawalSvdMain(code)
+        else:
+            corporations = self.mysql.corporations()
+            for row in corporations:
+                self.util.crawalSvdMain(row['code'])
 
-        result = self.util.crawalSvdMain(code)
-        pass
+    # 재무비율데이터
+    def crawalFinancialRatio(self, code=None):
+        """
+        유동비율, 부채비율, 영업이익율 roa, roic 등을 구함
+        :return:
+        """
+        if code:
+            self.util.crawalSvdFinanceRatio(code)
+        else:
+            corporations = self.mysql.corporations()
+            for row in corporations:
+                self.util.crawalSvdFinanceRatio(row['code'])
 
-    def crawalSvdMain(self):
-        corporations = self.mysql.corporations()
-        for row in corporations:
-            self.util.crawalSvdMain(row['code'])
-
-
-
-
+    def crawalFinance(self, code=None):
+        """
+        '매출액', '매출총이익', '영업이익', '당기순이익', '자산', '부채', '자본', '영업활동으로인한현금흐름'
+        :param code:
+        :return:
+        """
+        if code:
+            print('start1')
+            self.util.crawalSvdFinance(code)
+        else:
+            print('start1')
+            corporations = self.mysql.corporations()
+            for row in corporations:
+                self.util.crawalSvdFinance(row['code'])
 
 
 if __name__ == "__main__":
     fnguide = Fnguide()
+
+    # 1
+    # fnguide.crawalSvdMain()
+    fnguide.crawalSvdMain('023960')
+
+
+    #2 (update yearly)
+    # fnguide.crawalFinancialRatio()
+
+    #3 (update yearly)
+    # fnguide.crawalFinance()
+
+
     # fnguide.createFinancialStatementsToDB('A386580')
-    # fnguide.createFinancialRatioToDB('A004840')
     # fnguide.createInvestmentIndiatorsToDB('A004840')
     # fnguide.createFinancialStatementsTest('A005930')
-    # fnguide.crawalSvdMainTest('204210')
-    # fnguide.crawalSvdMainTest('005930')
-    # fnguide.crawalSvdMainTest('088980')
 
 
 
@@ -184,7 +220,8 @@ if __name__ == "__main__":
     # fnguide.createFinancialRatio()
     # fnguide.createInvestmentIndiators()
     # fnguide.crawlingConsensus()
-    fnguide.crawalSvdMain()
+
+
 
 
 

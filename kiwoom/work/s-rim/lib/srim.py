@@ -34,7 +34,11 @@ def estimate_price(code, k, w=1):
     """
     value, net_worth, roe, excess_earning = estimate_company_value(code, k, w)
 
-    print('estimate_price', value, net_worth, roe, excess_earning)
+    print('value', value)
+    print('net_worth', net_worth)
+    print('roe', roe)
+    print('excess_earning', excess_earning)
+
     shares = get_shares(code)
     try:
         price = value / shares
