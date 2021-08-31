@@ -23,7 +23,7 @@ class Mysql:
         """
         try:
             with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id, code, common_stocks from corporations where status = 0"
+                sql = "select id, code, investing_comp_name, common_stocks from corporations where status = 0"
                 curs.execute(sql)
 
                 rs = curs.fetchall()
@@ -469,8 +469,10 @@ class Mysql:
     def updateFinancialRatio(self, code, yyyymm, dataSet):
 
         yyyymm = yyyymm.replace('/', '')
-        if yyyymm[-2:] != '12':
-            return
+        if yyyymm[-2:] == '12':
+            flag = 'y'
+        else:
+            flag = 'q'
 
 
         current_ratio = dataSet['유동비율'] if ~np.isnan(dataSet['유동비율']) else None
@@ -484,7 +486,7 @@ class Mysql:
         try:
             with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select code from financeinfos_fnguide where code=%s and yyyymm=%s and flag=%s limit 0, 1"
-                curs.execute(sql, (code, yyyymm, 'y'))
+                curs.execute(sql, (code, yyyymm, flag))
                 # columns = curs.description
                 # print(columns)
 
@@ -496,7 +498,7 @@ class Mysql:
                     sql = 'insert into financeinfos_fnguide ' \
                           '(code, flag, yyyymm, current_ratio, debt_ratio, operating_profit_margin, roa, roic) ' \
                           'values(%s, %s, %s, %s, %s, %s, %s, %s)'
-                    curs.execute(sql, (code, 'y', yyyymm, current_ratio, debt_ratio, operating_profit_margin, roa, roic))
+                    curs.execute(sql, (code, flag, yyyymm, current_ratio, debt_ratio, operating_profit_margin, roa, roic))
 
                     self.conn.commit()
                 else:
@@ -508,7 +510,7 @@ class Mysql:
                           'roa=%s, ' \
                           'roic=%s ' \
                           'where code=%s and yyyymm=%s and flag=%s'
-                    curs.execute(sql, (current_ratio, debt_ratio, operating_profit_margin, roa, roic, code, yyyymm, 'y'))
+                    curs.execute(sql, (current_ratio, debt_ratio, operating_profit_margin, roa, roic, code, yyyymm, flag))
                     self.conn.commit()
         except Exception as e:
             print(e)
@@ -659,6 +661,105 @@ class Mysql:
             raise
         finally:
             pass
+
+    # Investing 관련
+    def earnings(self, code, data):
+        release_dt = data['발표일']
+        period_end_dt = data['기말']
+        eps = data['주당순이익'] if data['주당순이익'] != '--' else None
+        eps_forcast = data['예측'] if data['예측'] != '--' else None
+        revenue = data['매출'] if data['매출'] != '--' else None
+        revenue_forcast = data['예측.1'] if data['예측.1'] != '--' else None
+        print(release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast)
+
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = "select id from earnings where code=%s and period_end_dt=%s limit 0, 1"
+                curs.execute(sql, (code, period_end_dt))
+                rs = curs.fetchone()
+
+                if rs == None:  # 값이 없을 경우 현재 값 입력
+                    print('None')
+                    sql = 'insert into earnings ' \
+                          '(code, release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast) ' \
+                          'values(%s, %s, %s, %s, %s, %s, %s)'
+                    curs.execute(sql, (code, release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast))
+
+                    self.conn.commit()
+                else:
+                    print('UPDATE')
+                    sql = 'update earnings set ' \
+                          'release_dt=%s, ' \
+                          'eps=%s, ' \
+                          'eps_forcast=%s, ' \
+                          'revenue=%s, ' \
+                          'revenue_forcast=%s ' \
+                          'where id=%s'
+                    curs.execute(sql, (release_dt, eps, eps_forcast, revenue, revenue_forcast, rs['id']))
+                    self.conn.commit()
+                    # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
+        except:
+            print(curs._last_executed)
+            raise
+        finally:
+            pass
+
+    def updateInvestingCompname(self, id, eng):
+
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                    sql='UPDATE  corporations ' \
+                            'SET     investing_comp_name = %s ' \
+                            'WHERE   id = %s'
+
+                    curs.execute(sql, (eng, id))
+                    self.conn.commit()
+        except:
+            print(curs._last_executed)
+            raise
+        finally:
+            pass
+
+    def updateMarketPrices(self, code, yyyymm, close, open, high, low, trade_qty):
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = "select id from market_prices where code=%s and yyyymmdd=%s limit 0, 1"
+                curs.execute(sql, (code, yyyymm))
+                # columns = curs.description
+                # print(columns)
+
+                # rs = curs.fetchall()
+                rs = curs.fetchone()
+                print(rs)
+
+                if rs == None:  # 값이 없을 경우 현재 값 입력
+                    print('None')
+                    sql = 'insert into market_prices ' \
+                          '(code, yyyymmdd, close, open, high, low, trade_qty) ' \
+                          'values(%s, %s, %s, %s, %s, %s, %s)'
+                    curs.execute(sql, (
+                        code, yyyymm, close, open, high, low, trade_qty
+                    ))
+
+                    self.conn.commit()
+                else:
+                    sql = 'update market_prices set ' \
+                          'close=%s, ' \
+                          'open=%s, ' \
+                          'high=%s, ' \
+                          'low=%s, ' \
+                          'trade_qty=%s ' \
+                          'where id=%s'
+                    curs.execute(sql, (
+                        close, open, high, low, trade_qty, rs['id']
+                    ))
+                    self.conn.commit()
+
+                    # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
+        finally:
+            pass
+
+
             
     def isNaN(self, string):
         return string != string

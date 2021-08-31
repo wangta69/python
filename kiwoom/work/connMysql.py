@@ -101,6 +101,8 @@ class Mysql:
         finally:
             pass
 
+
+
     def corporations(self):
         try:
             with self.conn.cursor(pymysql.cursors.DictCursor) as curs:

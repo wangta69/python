@@ -12,6 +12,7 @@ from utils.extra import random_user_agent
 import investpy
 import re
 from datetime import datetime
+from stock_crawler.connMysql import Mysql
 
 class Investing():
     def __init__(self, parent=None):
@@ -101,10 +102,10 @@ class Investing():
                             r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
                             r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
                             self.mysql.earnings(row['code'], r)
-                        except KeyError:
-                            pass
-                        except:
-                            pass
+                        except KeyError as e:
+                            print('I got a KeyError - reason "%s"' % str(e))
+                        except Exception as e:
+                            print('I got a Exception  - reason "%s"' % str(e))
                             raise
                     print(df[0])
 
@@ -256,7 +257,9 @@ class Investing():
 
 
 investing = Investing()
+# 월 1회
 # investing.updateInvestingCompName()
+# 주 1회
 investing.earnings()
 # investing.test()
 

@@ -199,15 +199,18 @@ if __name__ == "__main__":
     fnguide = Fnguide()
 
     # 1
-    # fnguide.crawalSvdMain()
-    fnguide.crawalSvdMain('023960')
+    fnguide.crawalSvdMain()
+    # fnguide.crawalSvdMain('023960')
 
-
-    #2 (update yearly)
+    #2 (update monthly)  2017/12 2018/12 2019/12  2020/12 2021/06
     # fnguide.crawalFinancialRatio()
 
     #3 (update yearly)
     # fnguide.crawalFinance()
+
+
+
+
 
 
     # fnguide.createFinancialStatementsToDB('A386580')
