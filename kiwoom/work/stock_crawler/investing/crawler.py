@@ -12,7 +12,7 @@ from utils.extra import random_user_agent
 import investpy
 import re
 from datetime import datetime
-from stock_crawler.connMysql import Mysql
+from stock_crawler.database.connMysql import Mysql
 
 class Investing():
     def __init__(self, parent=None):

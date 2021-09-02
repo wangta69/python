@@ -1,7 +1,7 @@
 import requests
 import time
 from utils_magic import MagicUtil
-from stock_crawler.connMysql import Mysql
+from stock_crawler.database.connMysql import Mysql
 
 class Fnguide():
     def __init__(self, parent=None):
@@ -18,11 +18,11 @@ class Fnguide():
         corporations = self.mysql.corporations()
         for row in corporations:
             # 기존코드에서 A를 추가한 총 7자리 코드를 만든다(comp.fnguide.com)
-            code = MagicUtil.make_code(row['code'])
+            code = self.util.make_code(row['code'])
             try:
                 time.sleep(0.1)
                 try:
-                    fs_df = MagicUtil.make_fs_dataframe(code)
+                    fs_df = self.util.make_fs_dataframe(code)
                 except requests.exceptions.Timeout:
                     time.sleep(10)
                     fs_df = MagicUtil.make_fs_dataframe(code)
@@ -86,14 +86,14 @@ class Fnguide():
         corporations = self.mysql.corporations()
 
         for row in corporations:
-            code = MagicUtil.make_code(row['code'])
+            code = self.util.make_code(row['code'])
             try:
                 time.sleep(0.1)
                 try:
-                    invest_df = MagicUtil.make_invest_dataframe(code)
+                    invest_df = self.util.make_invest_dataframe(code)
                 except requests.exceptions.Timeout:
                     time.sleep(10)
-                    invest_df = MagicUtil.make_invest_dataframe(code)
+                    invest_df = self.util.make_invest_dataframe(code)
 
                 for idx, column in invest_df.iteritems():
                     trimcode = code.replace('A', '')
@@ -126,7 +126,7 @@ class Fnguide():
     #
     # # 투자지표데이터
     # def createInvestmentIndiatorsToDB(self, code):
-    #     fs_df = MagicUtil.make_invest_dataframe(code)
+    #     fs_df = self.util.make_invest_dataframe(code)
     #     for idx, column in fs_df.iteritems():
     #         # print('idx', idx)
     #         # print(column)
@@ -135,26 +135,28 @@ class Fnguide():
     #     pass
 
     # 증권사별 적정주가 & 투자의견
-    def crawlingConsensus(self):
-        corporations = self.mysql.corporations()
+    def crawlingConsensus(self, code=None):
+        if code:
+            result = self.util.crawalConsensus(code)
+            self.mysql.deleteConsensusEstimate(code)
+            for r in result['comp']:
+                self.mysql.updateConsensusEstimate(code, r)
 
-        for row in corporations:
-            code = MagicUtil.make_code(row['code'])
-            result = MagicUtil.crawalConsensus(code)
-            if len(result['comp']) > 0:
-                self.mysql.deleteConsensusEstimate(row['code'])
-                for r in result['comp']:
-                    print(r)
-                    self.mysql.updateConsensusEstimate(row['code'], r)
+        else:
+            corporations = self.mysql.corporations()
 
-
-        pass
+            for row in corporations:
+                result = self.util.crawalConsensus(row['code'])
+                if len(result['comp']) > 0:
+                    self.mysql.deleteConsensusEstimate(row['code'])
+                    for r in result['comp']:
+                        self.mysql.updateConsensusEstimate(row['code'], r)
 
 
     def crawalSvdMain(self, code=None):
         """
-        종가, 최고가, 수익률, 시가총액, 발생주식수(보통주 / 우선주)
-        투자의견, 목표주가, EPS, PER, 추정기관수
+        종가, 최고가, 수익률, 시가총액, 발행주식수(보통주 / 우선주)
+        (투자의견, 목표주가, 추정기관수,) EPS, PER
         매출액, 영업이익, 당기순이익, 지배주주순이익, 자본총계, 자본금, 부채비율, 유보율, ROA, ROE, EPS, BPS, DPS, PER, PBR, 발생주식수
         :param code:
         :return:
@@ -186,10 +188,8 @@ class Fnguide():
         :return:
         """
         if code:
-            print('start1')
             self.util.crawalSvdFinance(code)
         else:
-            print('start1')
             corporations = self.mysql.corporations()
             for row in corporations:
                 self.util.crawalSvdFinance(row['code'])
@@ -202,27 +202,22 @@ if __name__ == "__main__":
     fnguide.crawalSvdMain()
     # fnguide.crawalSvdMain('023960')
 
-    #2 (update monthly)  2017/12 2018/12 2019/12  2020/12 2021/06
+    # 2 (매일 처리) 명령실행후 관리자단에서 한번더 처리한다.
+    fnguide.crawlingConsensus()
+    # fnguide.crawlingConsensus('005930')
+
+    #3 (update monthly)  2017/12 2018/12 2019/12  2020/12 2021/06
     # fnguide.crawalFinancialRatio()
 
-    #3 (update yearly)
+    #4 (update yearly)
     # fnguide.crawalFinance()
-
-
-
-
-
-
-    # fnguide.createFinancialStatementsToDB('A386580')
-    # fnguide.createInvestmentIndiatorsToDB('A004840')
-    # fnguide.createFinancialStatementsTest('A005930')
 
 
 
     # fnguide.createFinancialStatements()
     # fnguide.createFinancialRatio()
     # fnguide.createInvestmentIndiators()
-    # fnguide.crawlingConsensus()
+
 
 
 

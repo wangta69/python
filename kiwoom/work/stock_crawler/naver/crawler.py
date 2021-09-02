@@ -1,5 +1,5 @@
 import time
-from stock_crawler.connMysql import Mysql
+from stock_crawler.database.connMysql import Mysql
 from util import Util
 
 
@@ -93,7 +93,7 @@ class Naver():
     #     return string != string
 naver = Naver()
 # 매 시장 close시
-# naver.updatePrice()  # 단순가격만 업데이트
+# naver.updatePrice()  # 단순가격만 업데이트(@deprecated)
 naver.updateMarketPrice()  # 시가종가등 모든 가격을 업데이트
 # naver.updateMarketPrice('005930')
 # naver.get_exprice_test('204210')

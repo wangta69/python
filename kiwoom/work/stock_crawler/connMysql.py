@@ -102,6 +102,7 @@ class Mysql:
     def updateCorpRecom(self, code, df):
 
         """
+        Deprecated
         투자의견 및 목표주가
         :param code:
         :param df:
@@ -224,9 +225,6 @@ class Mysql:
             with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select code from financeinfos where code=%s and yyyymm=%s limit 0, 1"
                 curs.execute(sql, (code, yyyymm))
-                # columns = curs.description
-                # print(columns)
-
                 # rs = curs.fetchall()
                 rs = curs.fetchone()
 
@@ -257,62 +255,62 @@ class Mysql:
         finally:
             pass
 
-    def updateOrder(self, yyyymm, setField, orderItem):
+    # def updateOrder(self, yyyymm, setField, orderItem):
+    #
+    #     try:
+    #         with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+    #
+    #             sql = 'update financeinfos target ' \
+    #                   'join ' \
+    #                   '(' \
+    #                   'select id, (@rownumber := @rownumber + 1) as rownum ' \
+    #                   'from financeinfos ' \
+    #                   'cross join (select @rownumber := 0) r ' \
+    #                   ' where yyyymm = %s and {} is not null ' \
+    #                   'order by {} asc ' \
+    #                   ') source on target.id = source.id ' \
+    #                   'set {} = rownum'
+    #
+    #             curs.execute(sql.format(orderItem, orderItem, setField), (yyyymm))
+    #             self.conn.commit()
+    #     except Exception as e:
+    #         print(e)
+    #         print(curs._last_executed)
+    #         raise
+    #     finally:
+    #         pass
 
-        try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-
-                sql = 'update financeinfos target ' \
-                      'join ' \
-                      '(' \
-                      'select id, (@rownumber := @rownumber + 1) as rownum ' \
-                      'from financeinfos ' \
-                      'cross join (select @rownumber := 0) r ' \
-                      ' where yyyymm = %s and {} is not null ' \
-                      'order by {} asc ' \
-                      ') source on target.id = source.id ' \
-                      'set {} = rownum'
-
-                curs.execute(sql.format(orderItem, orderItem, setField), (yyyymm))
-                self.conn.commit()
-        except Exception as e:
-            print(e)
-            print(curs._last_executed)
-            raise
-        finally:
-            pass
-
-    def updateScore(self, yyyymm):
-        """
-        설정 조건 충족시 1점, 미충족시 0점
-        당기순이익이 0이상인가?
-        영업현금흐름이 0이상인가?
-        ROA가 전년 대비 증가했는가?
-        영업현금흐름이 순이익보다 높은가?
-        부채비율이 전년 대비 감소했는가?
-        유동비율이 전년 대비 증가했는가?
-        당해 신규주식 발행을 하지 않았는가?
-        매출총이익이 전년 대비 증가했는가?
-        자산회전율이 전년 대비 증가했는가?
-        """
-        try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-
-                sql = 'UPDATE  financeinfos ' \
-                      'SET     score_net_income = IF(net_income > 0, 1, 0), ' \
-                      '        score_cashflow_operating = IF(cashflow_operating  > 0, 1, 0), ' \
-                      '        score_diff = IF(cashflow_operating >  net_income, 1, 0), ' \
-                      '        score_total = score_net_income +  score_cashflow_operating + score_diff ' \
-                      'WHERE   yyyymm = %s'
-
-                curs.execute(sql, (yyyymm))
-                self.conn.commit()
-        except Exception as e:
-            print(e)
-            print(curs._last_executed)
-            raise
-        finally:
-            pass
+    # def updateScore(self, yyyymm):
+    #     """
+    #     설정 조건 충족시 1점, 미충족시 0점
+    #     당기순이익이 0이상인가?
+    #     영업현금흐름이 0이상인가?
+    #     ROA가 전년 대비 증가했는가?
+    #     영업현금흐름이 순이익보다 높은가?
+    #     부채비율이 전년 대비 감소했는가?
+    #     유동비율이 전년 대비 증가했는가?
+    #     당해 신규주식 발행을 하지 않았는가?
+    #     매출총이익이 전년 대비 증가했는가?
+    #     자산회전율이 전년 대비 증가했는가?
+    #     """
+    #     try:
+    #         with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+    #
+    #             sql = 'UPDATE  financeinfos ' \
+    #                   'SET     score_net_income = IF(net_income > 0, 1, 0), ' \
+    #                   '        score_cashflow_operating = IF(cashflow_operating  > 0, 1, 0), ' \
+    #                   '        score_diff = IF(cashflow_operating >  net_income, 1, 0), ' \
+    #                   '        score_total = score_net_income +  score_cashflow_operating + score_diff ' \
+    #                   'WHERE   yyyymm = %s'
+    #
+    #             curs.execute(sql, (yyyymm))
+    #             self.conn.commit()
+    #     except Exception as e:
+    #         print(e)
+    #         print(curs._last_executed)
+    #         raise
+    #     finally:
+    #         pass
 
     def deleteConsensusEstimate(self, code):
         try:

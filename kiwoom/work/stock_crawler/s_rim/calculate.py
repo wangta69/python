@@ -4,10 +4,8 @@ import pystocklib.srim.reader as srim_reader
 import math
 from lib.reader import *
 from lib.srim import *
+from stock_crawler.database.connMysql import Mysql
 
-
-
-from stock_crawler.connMysql import Mysql
 class SrimClass():
     def __init__(self, parent=None):
         super().__init__()
