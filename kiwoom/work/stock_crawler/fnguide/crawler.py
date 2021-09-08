@@ -198,12 +198,12 @@ class Fnguide():
 if __name__ == "__main__":
     fnguide = Fnguide()
 
-    # 1
+    # 1(매일처리)
     fnguide.crawalSvdMain()
     # fnguide.crawalSvdMain('023960')
 
     # 2 (매일 처리) 명령실행후 관리자단에서 한번더 처리한다.
-    fnguide.crawlingConsensus()
+    # fnguide.crawlingConsensus()
     # fnguide.crawlingConsensus('005930')
 
     #3 (update monthly)  2017/12 2018/12 2019/12  2020/12 2021/06
@@ -211,8 +211,6 @@ if __name__ == "__main__":
 
     #4 (update yearly)
     # fnguide.crawalFinance()
-
-
 
     # fnguide.createFinancialStatements()
     # fnguide.createFinancialRatio()

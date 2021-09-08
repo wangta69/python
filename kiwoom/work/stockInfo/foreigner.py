@@ -20,7 +20,6 @@ class Foreigner(QAxWidget):
         kosdaq = stock.get_exhaustion_rates_of_foreign_investment_by_ticker(COM_DATE, 'KOSDAQ')
         stocks = pd.concat([kospi, kosdaq], axis=0)
 
-
         df = pd.read_html('http://kind.krx.co.kr/corpgeneral/corpList.do?method=download', header=0)[0]
 
         df = df[['회사명', '종목코드']]
@@ -44,7 +43,7 @@ class Foreigner(QAxWidget):
         plt.figure(figsize=(16, 8))
 
         plt.bar(sojin['회사명'], sojin['한도소진율'])
-        for x,y in enumerate(list(sojin['한도소진율'])):
+        for x, y in enumerate(list(sojin['한도소진율'])):
             plt.text(x, y, '{:.2f}%'.format(y), fontsize=13, color='#ff0000',
                      horizontalalignment='center', verticalalignment='bottom')
             plt.title('11월 20일 종목별 외국인 소진율 Top 10')

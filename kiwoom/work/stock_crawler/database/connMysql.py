@@ -8,6 +8,7 @@ from .querie.financeinfos_fnguide import Fnguide
 from .querie.financeinfos_naver import Naver
 from .querie.concensus_estimate import Concensus
 from .querie.earings import Earnings
+from .querie.trading_volume_sector import VolumeSector
 # import numpy as np
 # from stock_crawler.utils import *
 
@@ -27,6 +28,7 @@ class Mysql:
         self.conn_naver = Naver(self)
         self.conn_concensus = Concensus(self)
         self.conn_earings = Earnings(self)
+        self.conn_tr_volume = VolumeSector(self)
 
     def corporations(self):
         """
@@ -60,6 +62,25 @@ class Mysql:
         :return: None
         """
         return self.conn_corporatons.updateCorpTotalShares(code, shares)
+
+    def updateMomentum(self, code, momentum):
+        """
+        총주식수 업데이트 (보통주)
+        :param code:
+        :return: None
+        """
+        return self.conn_corporatons.updateMomentum(code, momentum)
+
+    def updateMovingAverage(self, code, average):
+        """
+        총주식수 업데이트 (보통주)
+        :param code:
+        :return: None
+        """
+        return self.conn_corporatons.updateMovingAverage(code, average)
+
+
+
 
     def updateFinancialStatements(self, code, yyyymm, dataSet):
         return self.conn_fnguide.updateFinancialStatements(code, yyyymm, dataSet)
@@ -117,6 +138,21 @@ class Mysql:
 
     def updateMarketPrices(self, code, yyyymm, close, open, high, low, trade_qty):
         return self.conn_market_prices.updateMarketPrices(code, yyyymm, close, open, high, low, trade_qty)
+
+    def prices(self, code, limit):
+        return self.conn_market_prices.prices(code, limit)
+
+    def updateStochastic(self, code, yyyymm, fast_k, slow_k, slow_d):
+        self.conn_market_prices.updateStochastic(code, yyyymm, fast_k, slow_k, slow_d)
+
+
+    def updateVolumeSector(self, code, yyyymm, row):
+        corp = row['기관합계']
+        corp_etc = row['기타법인']
+        private = row['개인']
+        foreigner = row['외국인합계']
+        print('yyyymm', yyyymm.strftime("%Y-%m-%d"))
+        self.conn_tr_volume.updateVolumeSector(code, yyyymm.strftime("%Y-%m-%d"), corp, corp_etc, private, foreigner)
 
     def isNaN(self, string):
         return string != string

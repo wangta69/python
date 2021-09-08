@@ -103,6 +103,39 @@ class Corporatons:
         finally:
             pass
 
+    def updateMomentum(self, code, momentum):
+        print('updateMomentum', code, momentum)
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = 'UPDATE  corporations ' \
+                      'SET     momentum = %s ' \
+                      'WHERE   code = %s'
+
+                curs.execute(sql, (momentum, code))
+                self.conn.commit()
+        except:
+            print(curs._last_executed)
+            raise
+        finally:
+            pass
+
+    def updateMovingAverage(self, code, average):
+        print('updateMovingAverrage', code, average)
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = 'UPDATE  corporations ' \
+                      'SET     moving_average_60 = %s ' \
+                      'WHERE   code = %s'
+
+                curs.execute(sql, (average, code))
+                self.conn.commit()
+        except:
+            print(curs._last_executed)
+            raise
+        finally:
+            pass
+
+
     # def updateCorpRecom(self, code, df):
     #
     #     """

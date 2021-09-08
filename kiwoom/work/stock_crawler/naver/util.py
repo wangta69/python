@@ -89,9 +89,7 @@ class Util:
             #       result[7][i])
 
     def get_market_prices(self, code, page_num=1):
-        print('code', code)
         result = self.print_stock_price(code, page_num)
-
         for i in range(len(result[0])):
             yyyymm = result[0][i].replace('.', '-') # 날짜
             close = result[1][i].replace(',', '') # 종가 (현재가)

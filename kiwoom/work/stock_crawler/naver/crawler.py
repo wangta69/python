@@ -1,7 +1,7 @@
 import time
 from stock_crawler.database.connMysql import Mysql
 from util import Util
-
+import numpy as np
 
 class Naver():
     def __init__(self):
@@ -27,7 +27,7 @@ class Naver():
 
     def updateMarketPrice(self, code=None):
         if code:
-            row = self.mysql.corporation(code)
+            # row = self.mysql.corporation(code)
             self.util.get_market_prices(code, 1)
             # self.mysql.updateCorpStockPrice(row['id'], price.replace(',', ''))
         else:

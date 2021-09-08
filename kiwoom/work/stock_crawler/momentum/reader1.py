@@ -95,6 +95,7 @@ class Mymomentum:
             for price in prices:
                 closes.insert(0, [price['yyyymmdd'], price['close']])
 
+
             df = pd.DataFrame(closes)
             df.columns = ['Date', 'Close']
 
@@ -155,9 +156,9 @@ class Mymomentum:
         if code:
             prices = self.mysql.prices(code, day)
             closes = []
-            # 역순으로 넣어 둔다.
             for price in prices:
                 closes.insert(0, [price['yyyymmdd'], price['close']])
+
 
             df = pd.DataFrame(closes)
             df.columns = ['Date', 'Close']
@@ -186,6 +187,9 @@ class Mymomentum:
                 avg = mean['Close'].iloc[-1]
                 gap60 = (latest - avg) / latest * 100
                 self.mysql.updateMovingAverage(code, gap60)
+
+
+
 
     # fig = plt.figure(figsize=(10,10))
     # ax = fig.add_subplot(1,1,1)
@@ -226,13 +230,13 @@ class Mymomentum:
 
 m = Mymomentum()
 # m.startGetPrice('2021-02-01', '2021-08-02') # 일자별 가격을 가지고 옮
-# m.startGetPrice('2021-02-01', '2021-09-06', '053080')
+# m.startGetPrice('2021-02-01', '2021-08-02', '005930')
 # m.calMomentum('005930')
 # m.calMomentum('010060')
 # m.calMomentum('207940')
 # m.calMomentum()
-# m.movingAverage(60, '207940')
-m.movingAverage(60)
+m.movingAverage(60, '207940')
+# m.movingAverage(60)
 
 # # ax.legend(loc=5)
 # # plt.show()

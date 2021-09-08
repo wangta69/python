@@ -237,37 +237,41 @@ class Fnguide:
         finally:
             pass
 
-            # srim 관련 데이타 가져오기
-            def getControllingShareholder(self, code, yyyymm):
-                """
-                지배주주지분 가져오기
-                :return:
-                """
-                try:
-                    with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-                        sql = "select controlling_shareholder from financeinfos_fnguide WHERE code = %s AND yyyymm = %s"
-                        curs.execute(sql, (code, yyyymm))
+    # srim 관련 데이타 가져오기
+    def getControllingShareholder(self, code, yyyymm):
+        """
+        지배주주지분 가져오기
+        :return:
+        """
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = "select controlling_shareholder from financeinfos_fnguide WHERE code = %s AND yyyymm = %s"
+                curs.execute(sql, (code, yyyymm))
 
-                        rs = curs.fetchone()
-                        return rs
-                # finally:
-                #     pass
+                rs = curs.fetchone()
+                return rs
+        except Exception as e:
+            print(e)
+            print(curs._last_executed)
+            raise
+        # finally:
+        #     pass
 
-            def get3yearRoe(self, code, yyyymm):
-                """
-                3년간 roe가져오기
-                :return:
-                """
-                try:
-                    with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-                        sql = "select roe, yyyymm controlling_shareholder from financeinfos_fnguide WHERE code = %s AND flag = %s and yyyymm <= %s order by yyyymm asc limit 0, 3"
-                        curs.execute(sql, (code, 'y', yyyymm))
+    def get3yearRoe(self, code, yyyymm):
+        """
+        3년간 roe가져오기
+        :return:
+        """
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = "select roe, yyyymm controlling_shareholder from financeinfos_fnguide WHERE code = %s AND flag = %s and yyyymm <= %s order by yyyymm asc limit 0, 3"
+                curs.execute(sql, (code, 'y', yyyymm))
 
-                        rs = curs.fetchall()
-                        return rs
-                except Exception as e:
-                    print(e)
-                    print(curs._last_executed)
-                    raise
-                # finally:
-                #     pass
+                rs = curs.fetchall()
+                return rs
+        except Exception as e:
+            print(e)
+            print(curs._last_executed)
+            raise
+        # finally:
+        #     pass
