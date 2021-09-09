@@ -3,9 +3,8 @@ from stock_crawler.utils import *
 
 # DB 테이블 칼럼대로 만든 객체
 class Fnguide:
-    def __init__(self, parent=None):
-        self.conn = parent.conn
-
+    def __init__(self, parent):
+        self.parent = parent
 
     def updateFinancialStatements(self, code, yyyymm, dataSet):
 
@@ -26,9 +25,9 @@ class Fnguide:
 
         print('update start', revenue, gross_profit, operating_income, net_income, asset, liability, equity,
               cashflow_operating)
-
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select code from financeinfos_fnguide where code=%s and yyyymm=%s and flag=%s limit 0, 1"
                 curs.execute(sql, (code, yyyymm, 'y'))
                 rs = curs.fetchone()
@@ -46,7 +45,7 @@ class Fnguide:
                     code, 'y', yyyymm, revenue, gross_profit, operating_income, net_income, asset, liability, equity,
                     cashflow_operating))
 
-                    self.conn.commit()
+                    conn.commit()
                 else:
                     print('UPDATE', revenue, gross_profit, operating_income, net_income, asset, liability, equity,
                           cashflow_operating,
@@ -65,7 +64,7 @@ class Fnguide:
                         revenue, gross_profit, operating_income, net_income, asset, liability, equity,
                         cashflow_operating,
                         code, yyyymm, 'y'))
-                    self.conn.commit()
+                    conn.commit()
         except Exception as e:
             print(e)
             print(curs._last_executed)
@@ -128,9 +127,9 @@ class Fnguide:
         # revenue = data['column'] if data['매출'] != '--' else None
         # revenue_forcast = data['예측.1'] if data['예측.1'] != '--' else None
         # print(release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast)
-
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select id from financeinfos_fnguide where code=%s and flag=%s and yyyymm=%s limit 0, 1"
                 curs.execute(sql, (code, flag, yyyymm))
                 rs = curs.fetchone()
@@ -150,7 +149,7 @@ class Fnguide:
                                   non_controlling_shareholder,
                                   debt_ratio, reserve_ratio, roe, eps, per, bps, pbr))
 
-                    self.conn.commit()
+                    conn.commit()
                 else:
                     print('UPDATE')
                     sql = 'update financeinfos_fnguide set ' \
@@ -173,7 +172,7 @@ class Fnguide:
                                        net_income_in_controlling, net_income_non_controlling, controlling_shareholder,
                                        non_controlling_shareholder,
                                        debt_ratio, reserve_ratio, roe, eps, per, bps, pbr, rs['id']))
-                    self.conn.commit()
+                    conn.commit()
                     # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
         except Exception as e:
             print(e)
@@ -197,9 +196,9 @@ class Fnguide:
         roic = dataSet['ROIC'] if ~np.isnan(dataSet['ROIC']) else None
 
         print('update start', code, yyyymm, current_ratio, debt_ratio, operating_profit_margin, roa, roic)
-
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select code from financeinfos_fnguide where code=%s and yyyymm=%s and flag=%s limit 0, 1"
                 curs.execute(sql, (code, yyyymm, flag))
                 # columns = curs.description
@@ -216,7 +215,7 @@ class Fnguide:
                     curs.execute(sql,
                                  (code, flag, yyyymm, current_ratio, debt_ratio, operating_profit_margin, roa, roic))
 
-                    self.conn.commit()
+                    conn.commit()
                 else:
                     print('UPDATE')
                     sql = 'update financeinfos_fnguide set ' \
@@ -228,7 +227,7 @@ class Fnguide:
                           'where code=%s and yyyymm=%s and flag=%s'
                     curs.execute(sql,
                                  (current_ratio, debt_ratio, operating_profit_margin, roa, roic, code, yyyymm, flag))
-                    self.conn.commit()
+                    conn.commit()
         except Exception as e:
             print(e)
             print(curs._last_executed)
@@ -243,8 +242,9 @@ class Fnguide:
         지배주주지분 가져오기
         :return:
         """
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select controlling_shareholder from financeinfos_fnguide WHERE code = %s AND yyyymm = %s"
                 curs.execute(sql, (code, yyyymm))
 
@@ -262,8 +262,9 @@ class Fnguide:
         3년간 roe가져오기
         :return:
         """
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select roe, yyyymm controlling_shareholder from financeinfos_fnguide WHERE code = %s AND flag = %s and yyyymm <= %s order by yyyymm asc limit 0, 3"
                 curs.execute(sql, (code, 'y', yyyymm))
 

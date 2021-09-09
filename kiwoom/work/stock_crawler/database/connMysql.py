@@ -16,12 +16,13 @@ from .querie.trading_volume_sector import VolumeSector
 class Mysql:
     def __init__(self):
         load_dotenv()
-        host = os.getenv('DB_HOST')
-        user = os.getenv('DB_USER')
-        password = os.getenv('DB_PASSWORD')
-        db = os.getenv('DB_DATABASE')
-
-        self.conn = pymysql.connect(host=host, user=user, password=password, db=db, charset='utf8')
+        # host = os.getenv('DB_HOST')
+        # user = os.getenv('DB_USER')
+        # password = os.getenv('DB_PASSWORD')
+        # db = os.getenv('DB_DATABASE')
+        #
+        # self.conn = pymysql.connect(host=host, user=user, password=password, db=db, charset='utf8')
+        self.conn = self.connect()
         self.conn_corporatons = Corporatons(self)
         self.conn_market_prices = MarketPrices(self)
         self.conn_fnguide = Fnguide(self)
@@ -44,6 +45,13 @@ class Mysql:
         """
         return self.conn_corporatons.corporation(code)
 
+    def updateCorporations(self, market, code, comp_name, industry, products, listed_at, sett_month, ceo, url, region):
+        """
+        신규 기업정보 입력 및 업데이트
+        :return: row
+        """
+        return self.conn_corporatons.updateCorporations(market, code, comp_name, industry, products, listed_at, sett_month, ceo, url, region)
+
     def updateCorpStockPrice(self, id, price):
         """
         당일 종가 업데이트
@@ -52,6 +60,9 @@ class Mysql:
         :return: None
         """
         return self.conn_corporatons.updateCorpStockPrice(id, price)
+
+    def updateSrim(self, id, price):
+        return self.conn_corporatons.updateSrim(id, price)
 
     # fnguide 의 데이타를 이용해서 처리
     def updateCorpTotalShares(self, code, shares):
@@ -79,13 +90,8 @@ class Mysql:
         """
         return self.conn_corporatons.updateMovingAverage(code, average)
 
-
-
-
     def updateFinancialStatements(self, code, yyyymm, dataSet):
         return self.conn_fnguide.updateFinancialStatements(code, yyyymm, dataSet)
-
-
 
     def deleteConsensusEstimate(self, code):
         self.conn_concensus.deleteConsensusEstimate(code)
@@ -112,11 +118,7 @@ class Mysql:
         3년간 roe가져오기
         :return:
         """
-        return  self.conn_fnguide.get3yearRoe(code, yyyymm)
-
-    # def updateSrim(self, id, price):
-    #     return self.conn_corporatons.updateSrim(id, price)
-
+        return self.conn_fnguide.get3yearRoe(code, yyyymm)
 
     def financeinfoNaver(self, code, idx, column):
         """
@@ -159,6 +161,14 @@ class Mysql:
 
     def close(self):
         self.conn.close()
+
+    def connect(self):
+        host = os.getenv('DB_HOST')
+        user = os.getenv('DB_USER')
+        password = os.getenv('DB_PASSWORD')
+        db = os.getenv('DB_DATABASE')
+
+        return pymysql.connect(host=host, user=user, password=password, db=db, charset='utf8')
 
     # def updateCorpRecom(self, code, df):
     #

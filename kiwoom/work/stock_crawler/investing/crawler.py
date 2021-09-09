@@ -1,43 +1,23 @@
-import xlrd
-import operator
 import pandas as pd
-import numpy as np
 import requests
-import bs4
 import time
-import html
-from bs4 import BeautifulSoup
 from connMysql import Mysql
-from utils.extra import random_user_agent
+from stock_crawler.investing.utils.extra import random_user_agent
 import investpy
 import re
 from datetime import datetime
 from stock_crawler.database.connMysql import Mysql
+# import xlrd
+# import operator
+# import numpy as np
+# import bs4
+# import html
+# from bs4 import BeautifulSoup
 
 class Investing():
     def __init__(self, parent=None):
         super().__init__()
         self.mysql = Mysql()
-
-    def getInvestingCompName(self, code):
-        """
-        기존 테이블에 investing 용 사이트 명을 넣어 둔다.
-        :param code:
-        :return:
-        """
-        try:
-            result = investpy.stocks.get_stock_company_profile(code, 'south korea', 'en')
-            # result = investpy.stocks.get_stock_company_profile(code, 'KOSDAQ', 'en')
-
-            segment = result['url'].split('/')
-            comp_name = segment[4].replace('-company-profile', "")
-
-            return comp_name
-        except:
-            return None
-            raise
-        finally:
-            pass
 
     def updateInvestingCompName(self):
         rows = self.mysql.corporations()
@@ -112,6 +92,27 @@ class Investing():
                 except:
                     pass
         pass
+
+
+    # def getInvestingCompName(self, code):
+    #     """
+    #     기존 테이블에 investing 용 사이트 명을 넣어 둔다.
+    #     :param code:
+    #     :return:
+    #     """
+    #     try:
+    #         result = investpy.stocks.get_stock_company_profile(code, 'south korea', 'en')
+    #         # result = investpy.stocks.get_stock_company_profile(code, 'KOSDAQ', 'en')
+    #
+    #         segment = result['url'].split('/')
+    #         comp_name = segment[4].replace('-company-profile', "")
+    #
+    #         return comp_name
+    #     except:
+    #         return None
+    #         raise
+    #     finally:
+    #         pass
 
     # def updateInvestingCompName(self):
     #     with open(r'ks.html', "r", encoding='utf8') as f:
@@ -255,13 +256,14 @@ class Investing():
             return str(s)
 
 
+if __name__ == "__main__":
+    investing = Investing()
+    # 월 1회
+    # investing.updateInvestingCompName()
+    # 주 1회
+    investing.earnings()
+    # investing.test()
 
-investing = Investing()
-# 월 1회
-# investing.updateInvestingCompName()
-# 주 1회
-investing.earnings()
-# investing.test()
 
 
 

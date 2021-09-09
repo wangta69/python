@@ -1,29 +1,13 @@
 import time
 from stock_crawler.database.connMysql import Mysql
-from util import Util
-import numpy as np
+from stock_crawler.naver.util import Util
+# import numpy as np
 
 class Naver():
     def __init__(self):
         super().__init__()
         self.mysql = Mysql()
         self.util = Util()
-
-    def updatePrice(self, code=None):
-        """
-        당일 종가 업데이트
-        :return:
-        """
-        if code:
-            row = self.mysql.corporation(code)
-            price = self.util.get_price(row['code'])
-            self.mysql.updateCorpStockPrice(row['id'], price.replace(',', ''))
-        else:
-            rows = self.mysql.corporations()
-            for row in rows:
-                time.sleep(0.1)
-                price = self.util.get_price(row['code'])
-                self.mysql.updateCorpStockPrice(row['id'], price.replace(',', ''))
 
     def updateMarketPrice(self, code=None):
         if code:
@@ -36,7 +20,21 @@ class Naver():
                 time.sleep(0.1)
                 self.util.get_market_prices(row['code'], 1)
 
-
+    # def updatePrice(self, code=None):
+    #     """
+    #     당일 종가 업데이트
+    #     :return:
+    #     """
+    #     if code:
+    #         row = self.mysql.corporation(code)
+    #         price = self.util.get_price(row['code'])
+    #         self.mysql.updateCorpStockPrice(row['id'], price.replace(',', ''))
+    #     else:
+    #         rows = self.mysql.corporations()
+    #         for row in rows:
+    #             time.sleep(0.1)
+    #             price = self.util.get_price(row['code'])
+    #             self.mysql.updateCorpStockPrice(row['id'], price.replace(',', ''))
 
     #
     # def get_exprice(self):
@@ -91,12 +89,12 @@ class Naver():
 
     # def isNaN(self, string):
     #     return string != string
-naver = Naver()
-# 매 시장 close시
-# naver.updatePrice()  # 단순가격만 업데이트(@deprecated)
-naver.updateMarketPrice()  # 시가종가등 모든 가격을 업데이트
-# naver.updateMarketPrice('005930')
-# naver.get_exprice_test('204210')
-# naver.get_exprice_test('017180')
+if __name__ == "__main__":
+    print(__name__)
+    naver = Naver()
+    # naver.updateMarketPrice()  # 시가종가등 모든 가격을 업데이트
+    naver.updateMarketPrice('005930')
 
-# naver.get_exprice()
+
+
+

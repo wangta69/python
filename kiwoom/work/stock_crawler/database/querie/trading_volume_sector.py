@@ -2,12 +2,13 @@ import pymysql
 
 # DB 테이블 칼럼대로 만든 객체
 class VolumeSector:
-    def __init__(self, parent=None):
-        self.conn = parent.conn
+    def __init__(self, parent):
+        self.parent = parent
 
     def updateVolumeSector(self, code, yyyymm, corp, corp_etc, private, foreigner):
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select id from trading_volume_sector where code=%s and yyyymmdd=%s limit 0, 1"
                 curs.execute(sql, (code, yyyymm))
                 # columns = curs.description
@@ -26,7 +27,7 @@ class VolumeSector:
                         code, yyyymm, corp, corp_etc, private, foreigner
                     ))
 
-                    self.conn.commit()
+                    conn.commit()
                 else:
                     sql = 'update trading_volume_sector set ' \
                           'corp=%s, ' \
@@ -37,7 +38,7 @@ class VolumeSector:
                     curs.execute(sql, (
                         corp, corp_etc, private, foreigner, rs['id']
                     ))
-                    self.conn.commit()
+                    conn.commit()
         except:
             print(curs._last_executed)
             raise

@@ -2,16 +2,18 @@ import pymysql
 
 # DB 테이블 칼럼대로 만든 객체
 class Concensus:
-    def __init__(self, parent=None):
-        self.conn = parent.conn
+    def __init__(self, parent):
+        self.parent = parent
+        # self.conn = parent.conn
 
 
     def deleteConsensusEstimate(self, code):
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = 'delete from concensus_estimate where code=%s'
                 curs.execute(sql, code)
-                self.conn.commit()
+                conn.commit()
         except Exception as e:
             print(e)
             print(curs._last_executed)
@@ -35,15 +37,17 @@ class Concensus:
 
         print(code, inst_cd, inst_nm, est_dt, target_prc, target_prc_bf, yoy, recom_cd, recom_cd_bf, avg_prc,
               avg_prc_bf, avg_recom_cd, avg_recom_cd_bf)
+
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = 'insert into concensus_estimate ' \
                       '(code, inst_cd, inst_nm, est_dt, target_prc, target_prc_bf, yoy, recom_cd, recom_cd_bf, avg_prc, avg_prc_bf, avg_recom_cd, avg_recom_cd_bf) ' \
                       'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
                 curs.execute(sql, (
                     code, inst_cd, inst_nm, est_dt, target_prc, target_prc_bf, yoy, recom_cd, recom_cd_bf, avg_prc,
                     avg_prc_bf, avg_recom_cd, avg_recom_cd_bf))
-                self.conn.commit()
+                conn.commit()
         except Exception as e:
             print(e)
             print(curs._last_executed)

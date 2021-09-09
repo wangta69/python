@@ -2,16 +2,17 @@ import pymysql
 
 # DB 테이블 칼럼대로 만든 객체
 class MarketPrices:
-    def __init__(self, parent=None):
-        self.conn = parent.conn
+    def __init__(self, parent):
+        self.parent = parent
 
     def prices(self, code, limit):
         """
         업체별 가격 리스트를 가져온다.
         :return:
         """
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select yyyymmdd, open, high, low, close from market_prices where code = %s order by yyyymmdd desc limit 0, %s"
                 curs.execute(sql, (code, limit))
 
@@ -23,8 +24,10 @@ class MarketPrices:
             raise
 
     def updateMarketPrices(self, code, yyyymm, close, open, high, low, trade_qty):
+
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select id from market_prices where code=%s and yyyymmdd=%s limit 0, 1"
                 curs.execute(sql, (code, yyyymm))
                 # columns = curs.description
@@ -43,7 +46,7 @@ class MarketPrices:
                         code, yyyymm, close, open, high, low, trade_qty
                     ))
 
-                    self.conn.commit()
+                    conn.commit()
                 else:
                     sql = 'update market_prices set ' \
                           'close=%s, ' \
@@ -55,7 +58,7 @@ class MarketPrices:
                     curs.execute(sql, (
                         close, open, high, low, trade_qty, rs['id']
                     ))
-                    self.conn.commit()
+                    conn.commit()
 
                     # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
         finally:
@@ -63,8 +66,9 @@ class MarketPrices:
 
     def updateStochastic(self, code, yyyymm, fast_k, slow_k, slow_d):
         print('updateStochastic', code, yyyymm, fast_k, slow_k, slow_d)
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select id from market_prices where code=%s and yyyymmdd=%s limit 0, 1"
                 curs.execute(sql, (code, yyyymm))
                 # columns = curs.description
@@ -82,8 +86,6 @@ class MarketPrices:
                 curs.execute(sql, (
                     fast_k, slow_k, slow_d, rs['id']
                 ))
-                self.conn.commit()
-
-
+                conn.commit()
         finally:
             pass

@@ -1,11 +1,6 @@
-import xlrd
-import operator
 import pandas as pd
-import numpy as np
 import requests
-import bs4
-import time
-from stock_crawler.connMysql import Mysql
+from stock_crawler_origin._connMysql import Mysql
 
 class MagicUtil:
     def __init__(self, parent=None):

@@ -16,43 +16,43 @@ class Mysql:
 
         self.conn = pymysql.connect(host=host, user=user, password=password, db=db, charset='utf8')
     
-    def corporations(self):
-        """
-        기업리스트 가져오기
-        :return: 
-        """
-        try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id, code, investing_comp_name, common_stocks from corporations where status = 0"
-                curs.execute(sql)
+    # def corporations(self):
+    #     """
+    #     기업리스트 가져오기
+    #     :return:
+    #     """
+    #     try:
+    #         with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+    #             sql = "select id, code, investing_comp_name, common_stocks from corporations where status = 0"
+    #             curs.execute(sql)
+    #
+    #             rs = curs.fetchall()
+    #             return rs
+    #     except Exception as e:
+    #         print('I got a Exception  - reason "%s"' % str(e))
+    #         print(curs._last_executed)
+    #         raise
+    #     finally:
+    #         pass
 
-                rs = curs.fetchall()
-                return rs
-        except Exception as e:
-            print('I got a Exception  - reason "%s"' % str(e))
-            print(curs._last_executed)
-            raise
-        finally:
-            pass
-
-    def corporation(self, code):
-        """
-        기업정보 가져오기
-        :return:
-        """
-        try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select common_stocks from corporations where code=%s"
-                curs.execute(sql, (code))
-
-                rs = curs.fetchone()
-                return rs
-        except Exception as e:
-            print('I got a Exception  - reason "%s"' % str(e))
-            print(curs._last_executed)
-            raise
-        finally:
-            pass
+    # def corporation(self, code):
+    #     """
+    #     기업정보 가져오기
+    #     :return:
+    #     """
+    #     try:
+    #         with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+    #             sql = "select common_stocks from corporations where code=%s"
+    #             curs.execute(sql, (code))
+    #
+    #             rs = curs.fetchone()
+    #             return rs
+    #     except Exception as e:
+    #         print('I got a Exception  - reason "%s"' % str(e))
+    #         print(curs._last_executed)
+    #         raise
+    #     finally:
+    #         pass
 
     def updateCorpStockPrice(self, id, price):
         """
@@ -554,9 +554,9 @@ class Mysql:
             pass
 
     def updateSrim(self, id, price):
+        print('updateSrim', id, price)
         try:
             with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
-
                 sql = 'update corporations set '\
                       's_rim=%s '\
                       'where id=%s'

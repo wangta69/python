@@ -2,8 +2,8 @@ import pymysql
 
 # DB 테이블 칼럼대로 만든 객체
 class Earnings:
-    def __init__(self, parent=None):
-        self.conn = parent.conn
+    def __init__(self, parent):
+        self.parent = parent
 
     def earnings(self, code, data):
         release_dt = data['발표일']
@@ -13,9 +13,9 @@ class Earnings:
         revenue = data['매출'] if data['매출'] != '--' else None
         revenue_forcast = data['예측.1'] if data['예측.1'] != '--' else None
         print(release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast)
-
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select id from earnings where code=%s and period_end_dt=%s limit 0, 1"
                 curs.execute(sql, (code, period_end_dt))
                 rs = curs.fetchone()
@@ -27,7 +27,7 @@ class Earnings:
                           'values(%s, %s, %s, %s, %s, %s, %s)'
                     curs.execute(sql, (code, release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast))
 
-                    self.conn.commit()
+                    conn.commit()
                 else:
                     print('UPDATE')
                     sql = 'update earnings set ' \
@@ -38,7 +38,7 @@ class Earnings:
                           'revenue_forcast=%s ' \
                           'where id=%s'
                     curs.execute(sql, (release_dt, eps, eps_forcast, revenue, revenue_forcast, rs['id']))
-                    self.conn.commit()
+                    conn.commit()
                     # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
         except:
             print(curs._last_executed)

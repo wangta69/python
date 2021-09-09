@@ -230,9 +230,9 @@ m = Mymomentum()
 # m.calMomentum('005930')
 # m.calMomentum('010060')
 # m.calMomentum('207940')
-# m.calMomentum()
+# m.calMomentum() # 90일동안의 가격을 이용하여 추세를 구함(기울기)
 # m.movingAverage(60, '207940')
-m.movingAverage(60)
+m.movingAverage(60) # 60일 이동평균선
 
 # # ax.legend(loc=5)
 # # plt.show()

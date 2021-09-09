@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from stock_crawler.connMysql import Mysql
+from stock_crawler_origin._connMysql import Mysql
 from stock_crawler.utils import *
 
 class Util:

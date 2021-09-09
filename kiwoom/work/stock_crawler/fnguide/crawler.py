@@ -1,6 +1,6 @@
 import requests
 import time
-from utils_magic import MagicUtil
+from stock_crawler.fnguide.utils_magic import MagicUtil
 from stock_crawler.database.connMysql import Mysql
 
 class Fnguide():
@@ -78,32 +78,32 @@ class Fnguide():
     #             continue
 
     # 투자지표데이터
-    def createInvestmentIndiators(self):
-        """
-        투자지표를 구한다. (per, pcr, psr, pbr, 총현금흐름)
-        :return:
-        """
-        corporations = self.mysql.corporations()
-
-        for row in corporations:
-            code = self.util.make_code(row['code'])
-            try:
-                time.sleep(0.1)
-                try:
-                    invest_df = self.util.make_invest_dataframe(code)
-                except requests.exceptions.Timeout:
-                    time.sleep(10)
-                    invest_df = self.util.make_invest_dataframe(code)
-
-                for idx, column in invest_df.iteritems():
-                    trimcode = code.replace('A', '')
-                    self.mysql.updateInvestmentIndiators(trimcode, idx, column)
-            except ValueError as e:
-                print('I got a ValueError - reason "%s"' % str(e))
-                continue
-            except KeyError as e:
-                print('I got a KeyError - reason "%s"' % str(e))
-                continue
+    # def createInvestmentIndiators(self):
+    #     """
+    #     투자지표를 구한다. (per, pcr, psr, pbr, 총현금흐름)
+    #     :return:
+    #     """
+    #     corporations = self.mysql.corporations()
+    #
+    #     for row in corporations:
+    #         code = self.util.make_code(row['code'])
+    #         try:
+    #             time.sleep(0.1)
+    #             try:
+    #                 invest_df = self.util.make_invest_dataframe(code)
+    #             except requests.exceptions.Timeout:
+    #                 time.sleep(10)
+    #                 invest_df = self.util.make_invest_dataframe(code)
+    #
+    #             for idx, column in invest_df.iteritems():
+    #                 trimcode = code.replace('A', '')
+    #                 self.mysql.updateInvestmentIndiators(trimcode, idx, column)
+    #         except ValueError as e:
+    #             print('I got a ValueError - reason "%s"' % str(e))
+    #             continue
+    #         except KeyError as e:
+    #             print('I got a KeyError - reason "%s"' % str(e))
+    #             continue
 
     # # 재무제표데이터
     # def createFinancialStatementsToDB(self, code):
@@ -199,11 +199,11 @@ if __name__ == "__main__":
     fnguide = Fnguide()
 
     # 1(매일처리)
-    fnguide.crawalSvdMain()
+    # fnguide.crawalSvdMain()
     # fnguide.crawalSvdMain('023960')
 
     # 2 (매일 처리) 명령실행후 관리자단에서 한번더 처리한다.
-    # fnguide.crawlingConsensus()
+    fnguide.crawlingConsensus()
     # fnguide.crawlingConsensus('005930')
 
     #3 (update monthly)  2017/12 2018/12 2019/12  2020/12 2021/06

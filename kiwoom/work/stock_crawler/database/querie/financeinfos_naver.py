@@ -2,8 +2,8 @@ import pymysql
 
 # DB 테이블 칼럼대로 만든 객체
 class Naver:
-    def __init__(self, parent=None):
-        self.conn = parent.conn
+    def __init__(self, parent):
+        self.parent = parent
 
     def financeinfoNaver(self, code, idx, column):
         """
@@ -48,9 +48,9 @@ class Naver:
         # revenue = data['column'] if data['매출'] != '--' else None
         # revenue_forcast = data['예측.1'] if data['예측.1'] != '--' else None
         # print(release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast)
-
+        conn = self.parent.connect()
         try:
-            with self.conn.cursor(pymysql.cursors.DictCursor) as curs:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
                 sql = "select id from financeinfos_naver where code=%s and flag=%s and yyyymm=%s limit 0, 1"
                 curs.execute(sql, (code, flag, yyyymm))
                 rs = curs.fetchone()
@@ -67,7 +67,7 @@ class Naver:
                                  (code, flag, yyyymm, revenue, operating_income, net_income, operating_profit_margin,
                                   net_profit_margin, debt_ratio, quick_ratio, reserve_ratio, roe, eps, per, bps, pbr))
 
-                    self.conn.commit()
+                    conn.commit()
                 else:
                     print('UPDATE')
                     sql = 'update financeinfos_naver set ' \
@@ -88,7 +88,7 @@ class Naver:
                     curs.execute(sql, (revenue, operating_income, net_income, operating_profit_margin,
                                        net_profit_margin, debt_ratio, quick_ratio, reserve_ratio, roe, eps, per, bps,
                                        pbr, rs['id']))
-                    self.conn.commit()
+                    conn.commit()
                     # 존재할 경우 현재 값과 비교하여 동일하면 skip 하고 다를 경우 업데이트 한다.
         except:
             print(curs._last_executed)
