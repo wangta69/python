@@ -19,9 +19,9 @@ class Calculate():
 
     def calStochastic(self, n, m, t, code=None):
         # fast_k, slow_k, slow_d를 획득
-        day = max(n, m, t) * 2
+        day = max(n, m, t) + 5
         # day = 100
-        # print('day', day + 10)
+        # print('day', day)
         if code:
             prices = self.mysql.prices(code, day)
             data = []
@@ -34,6 +34,8 @@ class Calculate():
             df['fast_k'] = get_stochastic_fast_k(df['Close'], df['Low'], df['High'], n)
             df['slow_k'] = get_stochastic_slow_k(df['fast_k'], m)
             df['slow_d'] = get_stochastic_slow_d(df['slow_k'], t)
+
+            # print(df)
 
             for index, row in df.iterrows():
                 date = row['Date']
@@ -156,10 +158,10 @@ if __name__ == "__main__":
     print(__name__)
     cal = Calculate()
     # 대부분 증권사에서는 n(5)-m(3)-t(3)를 사용하고 네이버금융은 n(15)-m(5)-t(3)을
-    # cal.calStochastic(15, 5, 3, '054040') # 나는 14, 5, 3
+    cal.calStochastic(15, 5, 3, '054040') # 나는 14, 5, 3
     # cal.calStochastic(15, 5, 3)
 
     # cal.calMomentum('207940') # 모멘텀(60일의 가격을 이용하여 예상 기울기)
     # cal.movingAverage(60)  # 60일 이동평균선
-    cal.calSrim("202012")
+    # cal.calSrim("202012")
 

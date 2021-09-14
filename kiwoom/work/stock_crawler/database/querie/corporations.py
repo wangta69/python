@@ -34,7 +34,7 @@ class Corporatons:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select common_stocks from corporations where code=%s"
+                sql = "select id, code, common_stocks from corporations where code=%s"
                 curs.execute(sql, (code))
 
                 rs = curs.fetchone()

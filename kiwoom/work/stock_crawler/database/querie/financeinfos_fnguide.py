@@ -245,8 +245,8 @@ class Fnguide:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select controlling_shareholder from financeinfos_fnguide WHERE code = %s AND yyyymm = %s"
-                curs.execute(sql, (code, yyyymm))
+                sql = "select controlling_shareholder from financeinfos_fnguide WHERE code = %s AND yyyymm = %s AND flag = %s"
+                curs.execute(sql, (code, yyyymm, 'y'))
 
                 rs = curs.fetchone()
                 return rs
@@ -265,7 +265,7 @@ class Fnguide:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select roe, yyyymm controlling_shareholder from financeinfos_fnguide WHERE code = %s AND flag = %s and yyyymm <= %s order by yyyymm asc limit 0, 3"
+                sql = "select roe, yyyymm controlling_shareholder from financeinfos_fnguide WHERE code = %s AND flag = %s and yyyymm <= %s order by yyyymm desc limit 0, 3"
                 curs.execute(sql, (code, 'y', yyyymm))
 
                 rs = curs.fetchall()

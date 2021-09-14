@@ -13,17 +13,21 @@ class Srim():
         self.mysql = Mysql()
 
     def cal3YearRoe(self, roe):
+        roe.reverse() # 현재 최근값이 0번째인것을 과거값이 0번째로 변경
         try:
             l = len(roe)
             if l == 3:
-                if roe[0] <= roe[1] <= roe[2] or roe[0] >= roe[1] >= roe[2]:
+                # if roe[0] <= roe[1] <= roe[2] or roe[0] >= roe[1] >= roe[2]:
+                if roe[0] <= roe[1] <= roe[2]:
                     roe = roe[2]
+                elif roe[0] >= roe[1] >= roe[2]: # roe가 계속 줄어드는 기업은 위험하므로 0으로 처리한다.
+                    return 0
                 else:
                     roe = (roe[0] + roe[1] * 2 + roe[2] * 3) / 6  # weighting average
                 return roe
-            elif l > 0:
+            elif l > 0: # 2개나 1하일경우는 최근값을 리턴
                 return roe[l - 1]
-            else:
+            else: # 이럴경우는 최근 분기 roe를 가져와서 처리하는 것은 어떨까?
                 return 0
         except Exception as e:
             print('[cal3YearRoe] I got a Exception - reason "%s"' % str(e))
@@ -31,14 +35,17 @@ class Srim():
 
     def srim_price(self, net_worth, roe, shares, k, w=1):
         """
-
-        :param net_worth: 지배주주지분
+        :param net_worth: 지배주주지분(자기자본(순자산))
         :param roe: 3년간 roe를 가져와서 roe를 구한다.
         :param shares: 보통주식수
-        :param k: 수익율 (BBB- 등급의 5년차 수익률)
-        :param w: 초과이익
+        :param k: 할인율 (BBB- 등급의 5년차 수익률)
+        :param w: 지속계수
         :return:
         """
+        # 기업가치 = 자기자본 + 초과이익 / 할인율
+        # 적정주가 = 기업가치 / 발행주식수
+        # 초과이익 = 자기자본 * (ROE - 할인율)
+        # value : 기업가치, price: 적정주가
         if w == 1:
             value = net_worth + (net_worth * (roe - k)) / k
         else:
@@ -56,17 +63,15 @@ class Srim():
         pass
 
     def updateSrim(self, yyyymm, code=None):
-        rows = self.mysql.corporations()
         # 1. BBB- 등급의  5년채 수익률을 가져온다.
         k = get_5years_earning_rate()
-        for row in rows:
-            # try:
-            code = row['code']
+
+        if code:
+            row = self.mysql.corporation(code)
             corp_id = row['id']
-            # 보통주식수 (shares)
             shares = row['common_stocks']
 
-            # 지배주주지분 (net_worth)
+            # 지배주주지분
             row = self.mysql.getControllingShareholder(code, yyyymm)
 
             if row is None:
@@ -75,6 +80,8 @@ class Srim():
                 net_worth = row['controlling_shareholder'] * 100000000  # 현재 db 저장단위(1억)
             else:
                 net_worth = 0
+
+            print('net_worth', net_worth)
 
             # 3년간 roe를 가져와서 roe를 구한다.
             rows = self.mysql.get3yearRoe(code, yyyymm)
@@ -87,10 +94,48 @@ class Srim():
             roe = self.cal3YearRoe(roes)
 
             price = self.srim_price(net_worth, roe, shares, k)  # BBB- 등급의 5년차 수익률 (8.17)
-            price09 = self.srim_price(net_worth, roe, shares, k, w=0.9)
-            price08 = self.srim_price(net_worth, roe, shares, k, w=0.8)
+            # price09 = self.srim_price(net_worth, roe, shares, k, w=0.9)  # 감소비율 10% => 0.9  (적정가격)
+            # price08 = self.srim_price(net_worth, roe, shares, k, w=0.8)  # 감소비율 20% => 0.8   (안전마진)
+            # price07 = self.srim_price(net_worth, roe, shares, k, w=0.7)  # 감소비율 30% => 0.7
 
             self.mysql.updateSrim(corp_id, price)
+
+        else:
+            rows = self.mysql.corporations()
+            for row in rows:
+                # try:
+                code = row['code']
+                corp_id = row['id']
+                # 보통주식수 (shares)
+                shares = row['common_stocks']
+
+                # 지배주주지분
+                row = self.mysql.getControllingShareholder(code, yyyymm)
+
+                if row is None:
+                    net_worth = 0
+                elif row['controlling_shareholder'] is not None:
+                    net_worth = row['controlling_shareholder'] * 100000000  # 현재 db 저장단위(1억)
+                else:
+                    net_worth = 0
+
+                print('net_worth', net_worth)
+
+                # 3년간 roe를 가져와서 roe를 구한다.
+                rows = self.mysql.get3yearRoe(code, yyyymm)
+                roes = []
+
+                for row in rows:
+                    # if ~math.isnan(row['roe']):
+                    if row['roe'] is not None:
+                        roes.append(row['roe'])
+                roe = self.cal3YearRoe(roes)
+
+                price = self.srim_price(net_worth, roe, shares, k)  # BBB- 등급의 5년차 수익률 (8.17)
+                price09 = self.srim_price(net_worth, roe, shares, k, w=0.9)
+                price08 = self.srim_price(net_worth, roe, shares, k, w=0.8)
+
+                self.mysql.updateSrim(corp_id, price)
             # print("초과이익 지속      : ", price)
             # print("초과이익 감소 (10%): ", price09)
             # print("초과이익 감소 (20%): ", price08)
@@ -99,115 +144,11 @@ class Srim():
         #     print(e)
         #     pass
 
-    # def updatePrice(self):
-    #     rows = self.mysql.corporations()
-    #     for row in rows:
-    #         try:
-    #             k = srim_reader.get_5years_earning_rate()
-    #             price0 = srim.estimate_price(row['code'], k) # BBB- 등급의 5년차 수익률 (8.17)
-    #             price1 = srim.estimate_price(row['code'], k, w=0.9)
-    #             price2 = srim.estimate_price(row['code'], k, w=0.8)
-    #
-    #             self.mysql.updateSRim(row['id'], price0[0])
-    #             print(row['code'])
-    #             print("초과이익 지속      : ", price0[0])
-    #             print("초과이익 감소 (10%): ", price1[0])
-    #             print("초과이익 감소 (20%): ", price2[0])
-    #         except:
-    #             pass
-
-    # def test(self):
-    #     code = '005930'
-    #     k = get_5years_earning_rate()
-    #     price0 = estimate_price(code, k)
-    #     price1 = estimate_price(code, k, w=0.9)
-    #     price2 = estimate_price(code, k, w=0.8)
-    #     #
-    #     # self.mysql.updateSRim(row['id'], price0[0])
-    #     # print(row['code'])
-    #     print("초과이익 지속      : ", price0)
-    #     print("초과이익 감소 (10%): ", price1)
-    #     print("초과이익 감소 (20%): ", price2)
-    #
-    #     print(price0)
-    #     pass
-    #
-    # def test(self):
-    #     """
-    #     데이타 베이스의 기초데이타를 기준으로 계산하기
-    #     :return:
-    #     """
-    #     # 1. BBB- 등급의  5년채 수익률을 가져온다.
-    #     k = get_5years_earning_rate()
-    #     print('k', k)
-    #
-    #     code = '005930'
-    #     yyyymm = '202012'
-    #
-    #     # 보통주식수 가져오기
-    #     row = self.mysql.corporation(code)
-    #     shares = row['common_stocks'];
-    #     print('shares', shares)
-    #
-    #     # 2. net_worth (지배주주지분) 가져온다.
-    #     row = self.mysql.getControllingShareholder(code, yyyymm)
-    #     net_worth = row['controlling_shareholder'] * 100000000  # 현재 db 저장단위(1억)
-    #     print('net_worth', net_worth)
-    #
-    #     # 3. 3년간 roe를 가져와서 roe를 구한다.
-    #     rows = self.mysql.get3yearRoe(code, yyyymm)
-    #     roes = []
-    #     for row in rows:
-    #         roes.append(row['roe'])
-    #         # try:
-    #         # except:
-    #
-    #     roe = cal3YearRoe(roes)
-    #     print('roe', roe)
-    #
-    #     # 4. 초과이익을 구한다.
-    #     excess_earning = net_worth * (roe - k) * 0.01
-    #     print('excess_earning', excess_earning)
-    #
-    #     # 5. value를 구한다.
-    #     w = 1
-    #     if w == 1:
-    #         value = net_worth + (net_worth * (roe - k)) / k
-    #     else:
-    #         excess_earning = net_worth * (roe - k) * 0.01
-    #         mul = w / (1.0 + k * 0.01 - w)
-    #         value = net_worth + excess_earning * mul
-    #     print('value', value)
-    #
-    #     # 7. 적정가격을 계산한다.
-    #     try:
-    #         price = value / shares
-    #     except:
-    #         price = 0
-    #
-    #     print('price', price)
-    #     # return price, shares, value, net_worth, roe, excess_earning
-    #
-    #     # price0 = estimate_price(code, k)
-    #     # price1 = estimate_price(code, k, w=0.9)
-    #     # price2 = estimate_price(code, k, w=0.8)
-    #     #
-    #     # self.mysql.updateSRim(row['id'], price0[0])
-    #     # print(row['code'])
-    #     # print("초과이익 지속      : ", price0)
-    #     # print("초과이익 감소 (10%): ", price1)
-    #     # print("초과이익 감소 (20%): ", price2)
-    #     #
-    #     # print(price0)
-    #     pass
-    #
-    # # def isNaN(self, string):
-    # #     return string != string
-
 
 if __name__ == "__main__":
     srimc = Srim()
-    srimc.updateSrim("202012")
+    # srimc.updateSrim('202012', '005930')
+    srimc.updateSrim('202012')
     # srimc.test()
 
     # s-rim
