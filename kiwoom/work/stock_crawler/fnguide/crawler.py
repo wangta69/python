@@ -147,8 +147,8 @@ class Fnguide():
 
             for row in corporations:
                 result = self.util.crawalConsensus(row['code'])
+                self.mysql.deleteConsensusEstimate(row['code'])
                 if len(result['comp']) > 0:
-                    self.mysql.deleteConsensusEstimate(row['code'])
                     for r in result['comp']:
                         self.mysql.updateConsensusEstimate(row['code'], r)
 
