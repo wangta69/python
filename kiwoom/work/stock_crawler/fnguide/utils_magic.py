@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
-from stock_crawler_origin._connMysql import Mysql
+# from stock_crawler_origin._connMysql import Mysql
+from stock_crawler.database.connMysql import Mysql
 
 class MagicUtil:
     def __init__(self, parent=None):
@@ -12,7 +13,6 @@ class MagicUtil:
     def make_code(self, x):
         x = str(x)
         return 'A' + '0' * (6-len(x)) + x
-
 
     # 투자지표 데이터프레임을 만드는 함수
     def make_invest_dataframe(self, firm_code):

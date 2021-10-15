@@ -82,8 +82,17 @@ class Calculate():
 
         x = np.arange(len(returns))
 
+        # slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+        # slope: float - slope of the regression line
+        # intercept: float - intercept of the regression line
+        # rvalue: float - correlation coefficient
+        # pvalue: float - two-sided p-value for a hypothesis test whose null hypothesis is that the slope is zero.
+        # stderr: float - Standard error of the estimate
+
         slope, _, rvalue, _, _ = linregress(x, returns) # 선형회귀분석
         return ((1 + slope) ** 252) * (rvalue ** 2) # annualize slope and multiply by R^2
+
+
 
     def calMomentum(self, code=None):
         if code:

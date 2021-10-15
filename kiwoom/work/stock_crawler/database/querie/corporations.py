@@ -1,5 +1,6 @@
 import pymysql
 import time
+from stock_crawler.utils import *
 
 # DB 테이블 칼럼대로 만든 객체
 class Corporatons:
@@ -34,7 +35,7 @@ class Corporatons:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id, code, common_stocks from corporations where code=%s"
+                sql = "select id, code, code_krx, common_stocks, investing_comp_name from corporations where code=%s"
                 curs.execute(sql, (code))
 
                 rs = curs.fetchone()
@@ -108,7 +109,25 @@ class Corporatons:
         finally:
             pass
 
+    def updateKrxCode(self, code, code_krx):
+        conn = self.parent.connect()
+        try:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = 'UPDATE  corporations ' \
+                      'SET     code_krx = %s ' \
+                      'WHERE   code = %s'
+
+                curs.execute(sql, (code_krx, code))
+                conn.commit()
+        except:
+            print(curs._last_executed)
+            raise
+        finally:
+            pass
+
     def updateMomentum(self, code, momentum):
+        if isNaN(momentum):
+            momentum = 0
         print('updateMomentum', code, momentum)
         conn = self.parent.connect()
         try:
@@ -126,6 +145,8 @@ class Corporatons:
             pass
 
     def updateMovingAverage(self, code, average):
+        if isNaN(average):
+            average = 0
         print('updateMovingAverrage', code, average)
         conn = self.parent.connect()
         try:

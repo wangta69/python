@@ -6,13 +6,18 @@ class Earnings:
         self.parent = parent
 
     def earnings(self, code, data):
+
         release_dt = data['발표일']
         period_end_dt = data['기말']
         eps = data['주당순이익'] if data['주당순이익'] != '--' else None
+
         eps_forcast = data['예측'] if data['예측'] != '--' else None
         revenue = data['매출'] if data['매출'] != '--' else None
         revenue_forcast = data['예측.1'] if data['예측.1'] != '--' else None
-        print(release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast)
+
+        # print(code, '발표일:' + release_dt, period_end_dt, 'eps:' + eps, 'eps(예상):' + eps_forcast, '매출:' + revenue, '매출(예상):' + revenue_forcast)
+        print(code, release_dt, period_end_dt, eps, eps_forcast, revenue, revenue_forcast)
+        # return
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:

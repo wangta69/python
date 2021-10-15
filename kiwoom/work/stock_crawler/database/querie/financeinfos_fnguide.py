@@ -90,10 +90,14 @@ class Fnguide:
         # net_profit_margin = column['순이익률'] if isNaN(column['순이익률']) == False else None
         # roe = column['ROE(지배주주)'] if isNaN(column['ROE(지배주주)']) == False else None
         debt_ratio = column['부채비율'] if isNaN(column['부채비율']) == False else None
+        if debt_ratio == '완전잠식':
+            debt_ratio = None
         # quick_ratio = column['당좌비율'] if column['당좌비율'] == False else None
         reserve_ratio = column['유보율'] if column['유보율'] == False else None
         roa = column['ROA'] if isNaN(column['ROA']) == False else None
         roe = column['ROE'] if isNaN(column['ROE']) == False else None
+        if roe == '완전잠식' or roe =='N/A(IFRS)':
+            roe = None
         eps = column['EPS(원)'] if isNaN(column['EPS(원)']) == False else None
         bps = column['BPS(원)'] if isNaN(column['BPS(원)']) == False else None
         dps = column['DPS(원)'] if isNaN(column['DPS(원)']) == False else None
@@ -191,6 +195,8 @@ class Fnguide:
 
         current_ratio = dataSet['유동비율'] if ~np.isnan(dataSet['유동비율']) else None
         debt_ratio = dataSet['부채비율'] if ~np.isnan(dataSet['부채비율']) else None
+        # if debt_ratio == '완전잠식':
+        #     debt_ratio = None
         operating_profit_margin = dataSet['영업이익률'] if ~np.isnan(dataSet['영업이익률']) else None
         roa = dataSet['ROA'] if ~np.isnan(dataSet['ROA']) else None
         roic = dataSet['ROIC'] if ~np.isnan(dataSet['ROIC']) else None

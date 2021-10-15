@@ -1,7 +1,7 @@
 # https://wikidocs.net/94805
-import pystocklib.srim as srim
+# import pystocklib.srim as srim
 # import pystocklib.srim.reader as srim_reader
-import math
+# import math
 from stock_crawler.technical_analysis.technical.s_rim_util import *
 # from lib.srim import *
 from stock_crawler.database.connMysql import Mysql

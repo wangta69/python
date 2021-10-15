@@ -1,7 +1,8 @@
 import pandas as pd
 import requests
 import time
-from connMysql import Mysql
+# from connMysql import Mysql
+# from stock_crawler.database.connMysql import Mysql
 from stock_crawler.investing.utils.extra import random_user_agent
 import investpy
 import re
@@ -43,55 +44,117 @@ class Investing():
 
 
 
-    def earnings(self):
+    def earnings(self, code=None):
         """
         earnings 를 가져와서 처리한다.
         :return:
         """
-        rows = self.mysql.corporations()
-        for row in rows:
-            time.sleep(0.1)
-            if row['investing_comp_name']:
-                headers = {
-                    "User-Agent": random_user_agent(),
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Accept": "text/html",
-                    "Accept-Encoding": "gzip, deflate",
-                    "Connection": "keep-alive",
-                }
-                params = {
+        headers = {
+            "User-Agent": random_user_agent(),
+            "X-Requested-With": "XMLHttpRequest",
+            "Accept": "text/html",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive",
+        }
+        params = {
 
-                }
+        }
 
-                try:
-                    url = 'https://kr.investing.com/equities/' + row['investing_comp_name'] + '-earnings'
-                    page = requests.get(url, headers=headers, data=params)
-                    df = pd.read_html(page.text)
-                    df[0].columns = df[0].columns.str.replace('[/,\s]', '', regex=True)
-                    for idx, r in df[0].iterrows():
-                        try:
-                            # row['예측'] = row['예측'].replace('/', '')
-                            r['주당순이익'] = re.sub('[/,\s,\,]', '', str(r['주당순이익']))
-                            r['예측'] = re.sub('[/,\s,\,]', '', r['예측'])
-                            r['매출'] = self.strtonumber(r['매출'])
-                            r['예측.1'] = self.strtonumber(r['예측.1'])
-                            # r['매출'] = re.sub('[B,M,\,]', '', r['매출'])
-                            # r['예측.1'] = re.sub('[/,\s, B,M,\,]', '', r['예측.1'])
+        if code:
+            row = self.mysql.corporation(code)
+            try:
+                url = 'https://kr.investing.com/equities/' + row['investing_comp_name'] + '-earnings'
+                print(url)
+                page = requests.get(url, headers=headers, data=params)
+                df = pd.read_html(page.text, match='발표일', header=0, encoding='utf-8')
+                df[0].columns = df[0].columns.str.replace('[/,\s]', '', regex=True)
+                for idx, r in df[0].iterrows():
+                    try:
+                        print('---')
+                        # row['예측'] = row['예측'].replace('/', '')
+                        r['주당순이익'] = re.sub('[/,\s,\,]', '', str(r['주당순이익']))
+                        r['예측'] = re.sub('[/,\s,\,]', '', r['예측'])
+                        r['매출'] = self.strtonumber(r['매출'])
+                        r['예측.1'] = self.strtonumber(r['예측.1'])
+                        # r['매출'] = re.sub('[B,M,\,]', '', r['매출'])
+                        # r['예측.1'] = re.sub('[/,\s, B,M,\,]', '', r['예측.1'])
 
-                            r['발표일'] = re.sub('[년,월]', '-', r['발표일'])
-                            r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
-                            r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
-                            self.mysql.earnings(row['code'], r)
-                        except KeyError as e:
-                            print('I got a KeyError - reason "%s"' % str(e))
-                        except Exception as e:
-                            print('I got a Exception  - reason "%s"' % str(e))
-                            raise
-                    print(df[0])
+                        r['발표일'] = re.sub('[년,월]', '-', r['발표일'])
+                        r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
+                        r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
+                        print(r)
+                        # print(r)
+                        self.mysql.earnings(row['code'], r)
+                    except KeyError as e:
+                        print('I got a KeyError ' + row['investing_comp_name'] + ' - reason "%s"' % str(e))
+                    except Exception as e:
+                        print('I got a Exception ' + row['investing_comp_name'] + '  - reason "%s"' % str(e))
+                        raise
+                # print(df[0])
+                #
+                # # df = pd.read_html(page.text)
+                # df[0].columns = df[0].columns.str.replace('[/,\s]', '', regex=True)
+                # for idx, r in df[0].iterrows():
+                #     try:
+                #         print(r)
+                #         # row['예측'] = row['예측'].replace('/', '')
+                #         r['주당순이익'] = re.sub('[/,\s,\,]', '', str(r['주당순이익']))
+                #         r['예측'] = re.sub('[/,\s,\,]', '', r['예측'])
+                #         r['매출'] = self.strtonumber(r['매출'])
+                #         r['예측.1'] = self.strtonumber(r['예측.1'])
+                #         # r['매출'] = re.sub('[B,M,\,]', '', r['매출'])
+                #         # r['예측.1'] = re.sub('[/,\s, B,M,\,]', '', r['예측.1'])
+                #
+                #         r['발표일'] = re.sub('[년,월]', '-', r['발표일'])
+                #         r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
+                #         r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
+                #         print(r)
+                #         # self.mysql.earnings(row['code'], r)
+                #     except KeyError as e:
+                #         print('I got a KeyError ' + row['investing_comp_name'] + ' - reason "%s"' % str(e))
+                #     except Exception as e:
+                #         print('I got a Exception ' + row['investing_comp_name'] + '  - reason "%s"' % str(e))
+                #         raise
+                # print(df[0])
 
-                except:
-                    pass
-        pass
+            except Exception as e:
+                print('I got a Exception Outer ' + row['investing_comp_name'] + '  - reason "%s"' % str(e))
+        else:
+            rows = self.mysql.corporations()
+            for row in rows:
+                time.sleep(0.1)
+                if row['investing_comp_name']:
+                    try:
+                        url = 'https://kr.investing.com/equities/' + row['investing_comp_name'] + '-earnings'
+                        page = requests.get(url, headers=headers, data=params)
+                        # df = pd.read_html(page.text)
+                        df = pd.read_html(page.text, match='발표일', header=0, encoding='utf-8')
+                        df[0].columns = df[0].columns.str.replace('[/,\s]', '', regex=True)
+                        for idx, r in df[0].iterrows():
+                            try:
+                                # row['예측'] = row['예측'].replace('/', '')
+                                r['주당순이익'] = re.sub('[/,\s,\,]', '', str(r['주당순이익']))
+                                r['예측'] = re.sub('[/,\s,\,]', '', r['예측'])
+                                r['매출'] = self.strtonumber(r['매출'])
+                                r['예측.1'] = self.strtonumber(r['예측.1'])
+                                # r['매출'] = re.sub('[B,M,\,]', '', r['매출'])
+                                # r['예측.1'] = re.sub('[/,\s, B,M,\,]', '', r['예측.1'])
+
+                                r['발표일'] = re.sub('[년,월]', '-', r['발표일'])
+                                r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
+                                r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
+                                self.mysql.earnings(row['code'], r)
+                            except KeyError as e:
+                                print('I got a KeyError ' + row['code'] + ' - reason "%s"' % str(e))
+                            except Exception as e:
+                                print('I got a Exception ' + row['code'] + '  - reason "%s"' % str(e))
+                                raise
+
+
+                    except Exception as e:
+                        print('I got a Exception Outer ' + row['code'] + '  - reason "%s"' % str(e))
+                        pass
+
 
 
     # def getInvestingCompName(self, code):
@@ -142,78 +205,78 @@ class Investing():
     #             link = data_row['link'].split('/')
     #             print(link[2])
     #             self.mysql.updateInvestingCompname(data_row['종목'], link[2])
-
-    def test(self):
-        # df = pd.read_html('https://www.investing.com/equities/hankuk-carbon-earnings')[0]
-        # print(df);
-        #
-        # df = investpy.get_stock_historical_data(stock='AAPL',
-        #                                         country='United States',
-        #                                         from_date='01/01/2010',
-        #                                         to_date='01/01/2020')
-        # print(df.head())
-        #
-        # print('search_result')
-        # search_result = investpy.search_quotes(text='apple', products=['stocks'],
-        #                                        countries=['united states'], n_results=1)
-        # print(search_result)
-        #
-        # search_result = investpy.search_quotes(text='hankuk-carbon', products=['stocks'],
-        #                                        countries=['south korea'], n_results=1)
-        # print(search_result)
-        # recent_data = search_result.retrieve_recent_data()
-        # historical_data = search_result.retrieve_historical_data(from_date='01/01/2019', to_date='01/01/2020')
-        # information = search_result.retrieve_information()
-        # default_currency = search_result.retrieve_currency()
-        # technical_indicators = search_result.retrieve_technical_indicators(interval='daily')
-        # print('recent_data', recent_data)
-        # print('historical_data', historical_data)
-        # print('information', information)
-        # print('default_currency', default_currency)
-        # print('technical_indicators', technical_indicators)
-        #
-        #
-        #
-        # result = investpy.stocks.get_stock_information('010690', 'south korea', as_json=False)
-        # # result = investpy.stocks.get_stock_information('017960', 'south korea', as_json=True)
-        # print(result)
-        # for index, data_row in result.iterrows():
-        #     print(data_row)
-
-        headers = {
-            "User-Agent": random_user_agent(),
-            "X-Requested-With": "XMLHttpRequest",
-            "Accept": "text/html",
-            "Accept-Encoding": "gzip, deflate",
-            "Connection": "keep-alive",
-        }
-        params = {
-
-        }
-        url = 'https://kr.investing.com/equities/hyundai-develop-earnings'
-        page = requests.get(url, headers=headers, data=params)
-        df = pd.read_html(page.text)
-        # print(df[0])
-        df[0].columns = df[0].columns.str.replace('[/,\s]', '', regex=True)
-
-        for idx, r in df[0].iterrows():
-            
-            # row['예측'] = row['예측'].replace('/', '')
-
-            r['주당순이익'] = re.sub('[/,\s,\,]', '', str(r['주당순이익']))
-            r['예측'] = re.sub('[/,\s,\,]', '', r['예측'])
-
-            r['매출'] = self.strtonumber(r['매출'])
-            r['예측.1'] = self.strtonumber(r['예측.1'])
-
-            r['발표일'] = re.sub('[년,월]', '-', r['발표일'])
-            r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
-            r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
-
-            print(r);
-
-
-        pass
+    #
+    # def test(self):
+    #     # df = pd.read_html('https://www.investing.com/equities/hankuk-carbon-earnings')[0]
+    #     # print(df);
+    #     #
+    #     # df = investpy.get_stock_historical_data(stock='AAPL',
+    #     #                                         country='United States',
+    #     #                                         from_date='01/01/2010',
+    #     #                                         to_date='01/01/2020')
+    #     # print(df.head())
+    #     #
+    #     # print('search_result')
+    #     # search_result = investpy.search_quotes(text='apple', products=['stocks'],
+    #     #                                        countries=['united states'], n_results=1)
+    #     # print(search_result)
+    #     #
+    #     # search_result = investpy.search_quotes(text='hankuk-carbon', products=['stocks'],
+    #     #                                        countries=['south korea'], n_results=1)
+    #     # print(search_result)
+    #     # recent_data = search_result.retrieve_recent_data()
+    #     # historical_data = search_result.retrieve_historical_data(from_date='01/01/2019', to_date='01/01/2020')
+    #     # information = search_result.retrieve_information()
+    #     # default_currency = search_result.retrieve_currency()
+    #     # technical_indicators = search_result.retrieve_technical_indicators(interval='daily')
+    #     # print('recent_data', recent_data)
+    #     # print('historical_data', historical_data)
+    #     # print('information', information)
+    #     # print('default_currency', default_currency)
+    #     # print('technical_indicators', technical_indicators)
+    #     #
+    #     #
+    #     #
+    #     # result = investpy.stocks.get_stock_information('010690', 'south korea', as_json=False)
+    #     # # result = investpy.stocks.get_stock_information('017960', 'south korea', as_json=True)
+    #     # print(result)
+    #     # for index, data_row in result.iterrows():
+    #     #     print(data_row)
+    #
+    #     headers = {
+    #         "User-Agent": random_user_agent(),
+    #         "X-Requested-With": "XMLHttpRequest",
+    #         "Accept": "text/html",
+    #         "Accept-Encoding": "gzip, deflate",
+    #         "Connection": "keep-alive",
+    #     }
+    #     params = {
+    #
+    #     }
+    #     url = 'https://kr.investing.com/equities/hyundai-develop-earnings'
+    #     page = requests.get(url, headers=headers, data=params)
+    #     df = pd.read_html(page.text)
+    #     # print(df[0])
+    #     df[0].columns = df[0].columns.str.replace('[/,\s]', '', regex=True)
+    #
+    #     for idx, r in df[0].iterrows():
+    #
+    #         # row['예측'] = row['예측'].replace('/', '')
+    #
+    #         r['주당순이익'] = re.sub('[/,\s,\,]', '', str(r['주당순이익']))
+    #         r['예측'] = re.sub('[/,\s,\,]', '', r['예측'])
+    #
+    #         r['매출'] = self.strtonumber(r['매출'])
+    #         r['예측.1'] = self.strtonumber(r['예측.1'])
+    #
+    #         r['발표일'] = re.sub('[년,월]', '-', r['발표일'])
+    #         r['발표일'] = re.sub('[일,\s]', '', r['발표일'])
+    #         r['기말'] = datetime.strptime(r['기말'], "%m/%Y")
+    #
+    #         print(r);
+    #
+    #
+    #     pass
 
     def searchTopbar(self):
         search_results = investpy.search_quotes(text='apple', products=['stocks', 'bonds'],
@@ -242,8 +305,9 @@ class Investing():
 
     def strtonumber(self, s):
         # s = re.sub('[/,\s, B,M,\,]', '',str)
-        if s == '--':
-            return '--'
+
+        if s == '--' or s == '/ --' :
+            return '0'
         else :
             s = re.sub('[/,\s, \,]', '', s)
             last_char = s[-1]
@@ -261,7 +325,9 @@ if __name__ == "__main__":
     # 월 1회
     # investing.updateInvestingCompName()
     # 주 1회
-    investing.earnings()
+    # investing.earnings()
+    # investing.earnings('004840')
+    investing.earnings('006400')
     # investing.test()
 
 
