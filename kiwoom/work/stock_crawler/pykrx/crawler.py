@@ -94,137 +94,189 @@ class Krx():
             self.mysql.updateCorporations(row[10], row[2], row[1], row[3], row[4], row[5], row[6], row[7], row[8], row[9])
 
             # (야후금융에서는 코스피를 "KS", 코스닥을 "KQ"로 관리한다.)
-    """
-    공매도 API
-    KRX는 (T+2)일 이후의 데이터를 제공합니다. 최근 영업일이 20190405라면 20190403일을 포함한 이전 데이터를 얻을 수 있습니다.
-    """
-    def get_shorting_status_by_date(self, from_dt=None, to_dt=None, code=None):
-
-        today = date.today()
-        if from_dt == None:
-            from_dt = today.strftime("%Y%m%d") - timedelta(5)
-
-        if to_dt == None:
-            to_dt = today.strftime("%Y%m%d") - timedelta(2)
-
-        if code:
-            try:
-                print(from_dt, to_dt, code)
-                df = stock.get_shorting_status_by_date(from_dt, to_dt, code)
-                print(df)
-                for ymd, row in df.iterrows():
-                    print('======================')
-                    print('ymd', ymd)
-                    print('거래량', row['거래량'])
-                    print('잔고수량', row['잔고수량'])
-                    print('거래대금', row['거래대금'])
-                    print('잔고금액', row['잔고금액'])
-
-                    volume = row['거래량']
-                    v_remain = row['잔고수량']
-                    tr_amount = row['거래대금']
-                    remain_amount = row['잔고금액']
-
-                    self.mysql.updateShortingStatus(code, ymd, volume, v_remain, tr_amount, remain_amount)
-                    pass
-            except ValueError as e:
-                print('I got a ValueError - reason "%s"' % str(e))
-            finally:
-                pass
-
-        else:
-            rows = self.mysql.corporations()
-            for row in rows:
-                code = row['code']
-                print('code', code)
-                try:
-                    df = stock.get_shorting_status_by_date(from_dt, to_dt, code)
-                    for ymd, row in df.iterrows():
-                        print('======================')
-                        print('ymd', ymd)
-                        print('거래량', row['거래량'])
-                        print('잔고수량', row['잔고수량'])
-                        print('거래대금', row['거래대금'])
-                        print('잔고금액', row['잔고금액'])
-
-                        volume = row['거래량']
-                        v_remain = row['잔고수량']
-                        tr_amount = row['거래대금']
-                        remain_amount = row['잔고금액']
-
-                        self.mysql.updateShortingStatus(code, ymd, volume, v_remain, tr_amount, remain_amount)
-                except ValueError as e:
-                    print('I got a ValueError - reason "%s"' % str(e))
-                finally:
-                    pass
-
-
-
-        """
-        종목별 공매도 현황
-        공매도, 잔고, 공매도금액, 잔고금액을 확인
-        :return: 
-        """
-        pass
-    def get_shorting_volume_by_ticker(self, dt=None):
-        """
-        종목별 공매도 거래 정보(공매도 거래량 정보를 반환합니다.)
-        공매도, 잔고, 공매도금액, 잔고금액을 확인
-        하루전까지 조회가능
-        :return:
-        """
-        # today = date.today()
-
-        if dt == None:
-            yesterday = date.today() - timedelta(1)
-            dt = yesterday.strftime("%Y%m%d")
-        print(dt)
-        try:
-            df = stock.get_shorting_volume_by_ticker(dt)
-            for code, row in df.iterrows():
-                # print('code', code)
-                # print('공매도', row['공매도'])
-                # print('매수', row['매수'])
-                # print('비중', row['비중'])
-                volume = row['공매도']
-                v_buy = row['매수']
-                ratio = row['비중']
-
-                self.mysql.updateShortingVolume(code, dt, volume, v_buy, ratio)
-        except ValueError as e:
-            print('I got a ValueError - reason "%s"' % str(e))
-        finally:
-            pass
-        # print(df.head(3))
-        # print(df)
-        # for code, row in df.iterrows():
-        #     if code == '005930':
-        #         print('code', code)
-        #         print('row', row)
-        #         # self.mysql.updateVolumeSector(ymd, row)
+    # """
+    # 공매도 API
+    # KRX는 (T+2)일 이후의 데이터를 제공합니다. 최근 영업일이 20190405라면 20190403일을 포함한 이전 데이터를 얻을 수 있습니다.
+    # """
+    # def get_shorting_status_by_date(self, from_dt=None, to_dt=None, code=None):
+    #
+    #     today = date.today()
+    #     if from_dt == None:
+    #         from_dt = today.strftime("%Y%m%d") - timedelta(5)
+    #
+    #     if to_dt == None:
+    #         to_dt = today.strftime("%Y%m%d") - timedelta(2)
+    #
+    #     if code:
+    #         try:
+    #             print(from_dt, to_dt, code)
+    #             df = stock.get_shorting_status_by_date(from_dt, to_dt, code)
+    #             print(df)
+    #             for ymd, row in df.iterrows():
+    #                 print('======================')
+    #                 print('ymd', ymd)
+    #                 print('거래량', row['거래량'])
+    #                 print('잔고수량', row['잔고수량'])
+    #                 print('거래대금', row['거래대금'])
+    #                 print('잔고금액', row['잔고금액'])
+    #
+    #                 volume = row['거래량']
+    #                 v_remain = row['잔고수량']
+    #                 tr_amount = row['거래대금']
+    #                 remain_amount = row['잔고금액']
+    #
+    #                 print('===================')
+    #                 print('yyyymmdd: ' + ymd)
+    #                 print('volume: ' + volume)
+    #                 print('v_remain: ' + v_remain)
+    #                 print('tr_amount: ' + tr_amount)
+    #                 print('remain_amount: ' + remain_amount)
+    #
+    #                 self.mysql.updateShortingStatus(code, ymd, volume, v_remain, tr_amount, remain_amount)
+    #                 pass
+    #         except ValueError as e:
+    #             print('I got a ValueError - reason "%s"' % str(e))
+    #         finally:
+    #             pass
+    #
+    #     else:
+    #         rows = self.mysql.corporations()
+    #         for row in rows:
+    #             code = row['code']
+    #             print('code', code)
+    #             try:
+    #                 df = stock.get_shorting_status_by_date(from_dt, to_dt, code)
+    #                 for ymd, row in df.iterrows():
+    #                     print('======================')
+    #                     print('ymd', ymd)
+    #                     print('거래량', row['거래량'])
+    #                     print('잔고수량', row['잔고수량'])
+    #                     print('거래대금', row['거래대금'])
+    #                     print('잔고금액', row['잔고금액'])
+    #
+    #                     volume = row['거래량']
+    #                     v_remain = row['잔고수량']
+    #                     tr_amount = row['거래대금']
+    #                     remain_amount = row['잔고금액']
+    #
+    #
+    #
+    #                     self.mysql.updateShortingStatus(code, ymd, volume, v_remain, tr_amount, remain_amount)
+    #             except ValueError as e:
+    #                 print('I got a ValueError - reason "%s"' % str(e))
+    #             finally:
+    #                 pass
+    #
+    #
+    #
+    #     """
+    #     종목별 공매도 현황
+    #     공매도, 잔고, 공매도금액, 잔고금액을 확인
+    #     :return:
+    #     """
+    #     pass
+    # def get_shorting_volume_by_ticker(self, dt=None):
+    #     """
+    #     종목별 공매도 거래 정보(공매도 거래량 정보를 반환합니다.)
+    #     공매도, 잔고, 공매도금액, 잔고금액을 확인
+    #     하루전까지 조회가능
+    #     :return:
+    #     """
+    #     # today = date.today()
+    #
+    #     if dt == None:
+    #         yesterday = date.today() - timedelta(1)
+    #         dt = yesterday.strftime("%Y%m%d")
+    #     print(dt)
+    #     try:
+    #         df = stock.get_shorting_volume_by_ticker(dt)
+    #         for code, row in df.iterrows():
+    #             # print('code', code)
+    #             # print('공매도', row['공매도'])
+    #             # print('매수', row['매수'])
+    #             # print('비중', row['비중'])
+    #             volume = row['공매도']
+    #             v_buy = row['매수']
+    #             ratio = row['비중']
+    #
+    #             self.mysql.updateShortingVolume(code, dt, volume, v_buy, ratio)
+    #     except ValueError as e:
+    #         print('I got a ValueError - reason "%s"' % str(e))
+    #     finally:
+    #         pass
+    #     # print(df.head(3))
+    #     # print(df)
+    #     # for code, row in df.iterrows():
+    #     #     if code == '005930':
+    #     #         print('code', code)
+    #     #         print('row', row)
+    #     #         # self.mysql.updateVolumeSector(ymd, row)
 
     def updateCorpCode(self):
         self.krxcrawer.readeCorp()
         pass
 
-    def get_shorting(self, from_dt=None, to_dt=None, code=None):
+    # def 일별_개별종목_공매도_거래_전종목(self, trdDd):
+    #     mktIds = ['STK', 'KSQ']
+    #     for mktId in mktIds:
+    #         self.krxcrawer.일별_개별종목_공매도_거래_전종목(mktId, trdDd)
+    #     # if code:
+    #     #     row = self.mysql.corporation(code)
+    #     #     print(row['code_krx'])
+    #     #
+    #     #
+    #     #
+    #     #     if row['code_krx']:
+    #     #         self.krxcrawer.getShorting(row['code_krx'], from_dt, to_dt)
+    #     #         pass
+    #     # else:
+    #     #     pass
+    #     #
+    #     # pass
+
+    def 기간별_개별종목_공매도_종합정보(self, strtDd=None, endDd=None, code=None):
+        # mktIds = ['STK', 'KSQ']
+        # for mktId in mktIds:
+        #     self.krxcrawer.일별_개별종목_공매도_거래_전종목(mktId, trdDd)
+
+        today = date.today()
+        print(today);
+        print(today.strftime("%Y%m%d"))
+        print(timedelta(7))
+        if strtDd == None:
+            strtDd = (today - timedelta(7)).strftime("%Y%m%d")
+
+        if endDd == None:
+            endDd = today.strftime("%Y%m%d")
+
         if code:
             row = self.mysql.corporation(code)
-            print(row['code_krx'])
             if row['code_krx']:
-                self.krxcrawer.getShorting(row['code_krx'], from_dt, to_dt)
+                self.krxcrawer.기간별_개별종목_공매도_종합정보(code, row['code_krx'], strtDd, endDd)
                 pass
         else:
+            rows = self.mysql.corporations()
+            for row in rows:
+                code = row['code']
+                code_krx = row['code_krx']
+                if code_krx:
+                    self.krxcrawer.기간별_개별종목_공매도_종합정보(code, code_krx, strtDd, endDd)
+                    pass
+
+
             pass
 
-        pass
+
+
 
 
 if __name__ == "__main__":
     krx = Krx()
     # query를 위한 krx용 업체코드
     # krx.updateCorpCode()
-    krx.get_shorting("20211001", "20211001", "005930")
+    # krx.기간별_개별종목_공매도_종합정보("20211001", "20211015", "005930")
+    krx.기간별_개별종목_공매도_종합정보()
+    # krx.일별_개별종목_공매도_거래_전종목('20211001')
 
     # 매 시장 close시
     # naver.updatePrice()  # 단순가격만 업데이트(@deprecated)

@@ -39,9 +39,9 @@ class Naver:
             print(idx[1] + '======================================')
             return
 
-        yyyymm = idx[1].replace('.', '')
-        yyyymm = yyyymm.replace('(E)', '')
-        print(yyyymm)
+        ym = idx[1].replace('.', '')
+        ym = ym.replace('(E)', '')
+        print(ym)
 
         # eps = column['주당순이익'] if data['주당순이익'] != '--' else None
         # eps_forcast = data['column'] if data['예측'] != '--' else None
@@ -51,20 +51,20 @@ class Naver:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id from financeinfos_naver where code=%s and flag=%s and yyyymm=%s limit 0, 1"
-                curs.execute(sql, (code, flag, yyyymm))
+                sql = "select id from financeinfos_naver where code=%s and flag=%s and ym=%s limit 0, 1"
+                curs.execute(sql, (code, flag, ym))
                 rs = curs.fetchone()
 
                 if rs == None:  # 값이 없을 경우 현재 값 입력
                     print('None')
-                    print(code, flag, yyyymm, revenue, operating_income, net_income, operating_profit_margin,
+                    print(code, flag, ym, revenue, operating_income, net_income, operating_profit_margin,
                           net_profit_margin, debt_ratio, quick_ratio, reserve_ratio, roe, eps, per, bps, pbr)
                     sql = 'insert into financeinfos_naver ' \
-                          '(code, flag, yyyymm, revenue, operating_income, net_income, operating_profit_margin, ' \
+                          '(code, flag, ym, revenue, operating_income, net_income, operating_profit_margin, ' \
                           'net_profit_margin, debt_ratio, quick_ratio, reserve_ratio, roe, eps, per, bps, pbr) ' \
                           'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
                     curs.execute(sql,
-                                 (code, flag, yyyymm, revenue, operating_income, net_income, operating_profit_margin,
+                                 (code, flag, ym, revenue, operating_income, net_income, operating_profit_margin,
                                   net_profit_margin, debt_ratio, quick_ratio, reserve_ratio, roe, eps, per, bps, pbr))
 
                     conn.commit()

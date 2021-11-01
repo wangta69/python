@@ -5,12 +5,12 @@ class VolumeSector:
     def __init__(self, parent):
         self.parent = parent
 
-    def updateVolumeSector(self, code, yyyymm, corp, corp_etc, private, foreigner):
+    def updateVolumeSector(self, code, ymd, corp, corp_etc, private, foreigner):
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id from trading_volume_sector where code=%s and yyyymmdd=%s limit 0, 1"
-                curs.execute(sql, (code, yyyymm))
+                sql = "select id from trading_volume_sector where code=%s and ymd=%s limit 0, 1"
+                curs.execute(sql, (code, ymd))
                 # columns = curs.description
                 # print(columns)
 
@@ -21,10 +21,10 @@ class VolumeSector:
                 if rs == None:  # 값이 없을 경우 현재 값 입력
                     print('None')
                     sql = 'insert into trading_volume_sector ' \
-                          '(code, yyyymmdd, corp, corp_etc, private, foreigner) ' \
+                          '(code, ymd, corp, corp_etc, private, foreigner) ' \
                           'values(%s, %s, %s, %s, %s, %s)'
                     curs.execute(sql, (
-                        code, yyyymm, corp, corp_etc, private, foreigner
+                        code, ymd, corp, corp_etc, private, foreigner
                     ))
 
                     conn.commit()

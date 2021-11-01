@@ -10,6 +10,8 @@ from .querie.concensus_estimate import Concensus
 from .querie.earings import Earnings
 from .querie.trading_volume_sector import VolumeSector
 from .querie.shorting import Shorting
+from .querie.trading_top_sector import TopVolumeSector
+from .querie.sectors import Sectors
 # import numpy as np
 # from stock_crawler.utils import *
 
@@ -31,7 +33,9 @@ class Mysql:
         self.conn_concensus = Concensus(self)
         self.conn_earings = Earnings(self)
         self.conn_tr_volume = VolumeSector(self)
+        self.conn_top_tr_volume = TopVolumeSector(self)
         self.conn_shorting = Shorting(self)
+        self.conn_sectors = Sectors(self)
 
     def corporations(self):
         """
@@ -149,6 +153,9 @@ class Mysql:
     def prices(self, code, limit):
         return self.conn_market_prices.prices(code, limit)
 
+    def price(self, code, ymd):
+        return self.conn_market_prices.price(code, ymd)
+
     def updateStochastic(self, code, yyyymm, fast_k, slow_k, slow_d):
         self.conn_market_prices.updateStochastic(code, yyyymm, fast_k, slow_k, slow_d)
 
@@ -161,11 +168,30 @@ class Mysql:
         print('yyyymm', yyyymm.strftime("%Y-%m-%d"))
         self.conn_tr_volume.updateVolumeSector(code, yyyymm.strftime("%Y-%m-%d"), corp, corp_etc, private, foreigner)
 
-    def updateShortingStatus(self, code, ymd, volume, v_remain, tr_amount, remain_amount):
-        self.conn_shorting.updateShortingStatus(code, ymd, volume, v_remain, tr_amount, remain_amount)
+    def updateTopVolumeSector(self, code, ymd, sb, corp, qty):
+        self.conn_top_tr_volume.update(code, ymd, sb, corp, qty)
 
-    def updateShortingVolume(self, code, dt, volume, v_buy, ratio):
-        self.conn_shorting.updateShortingVolume(code, dt, volume, v_buy, ratio)
+    def updateShorting(self, code, ymd, s_vol, s_amt, r_vol, s_remain_vol, s_remain_amt, ratio):
+        self.conn_shorting.update(code, ymd, s_vol, s_amt, r_vol, s_remain_vol, s_remain_amt, ratio)
+
+    def getSectorId(self, name):
+        return self.conn_sectors.getSectorId(name)
+
+    def MappingSector(self, code, sector_id):
+        self.conn_sectors.MappingSector(code, sector_id)
+
+    def getThemeId(self, name):
+        return self.conn_sectors.getThemeId(name)
+
+    def MappingTheme(self, code, sector_id):
+        self.conn_sectors.MappingTheme(code, sector_id)
+
+    #
+    # def updateShortingStatus(self, code, ymd, volume, v_remain, tr_amount, remain_amount):
+    #     self.conn_shorting.updateShortingStatus(code, ymd, volume, v_remain, tr_amount, remain_amount)
+    #
+    # def updateShortingVolume(self, code, dt, volume, v_buy, ratio):
+    #     self.conn_shorting.updateShortingVolume(code, dt, volume, v_buy, ratio)
 
     def isNaN(self, string):
         return string != string
@@ -181,3 +207,6 @@ class Mysql:
         port = int(os.getenv('DB_PORT'))
         # print(host, port, user, password, db)
         return pymysql.connect(host=host, port=port, user=user, password=password, db=db, charset='utf8')
+
+
+

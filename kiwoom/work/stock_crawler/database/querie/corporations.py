@@ -15,7 +15,7 @@ class Corporatons:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id, code, investing_comp_name, common_stocks from corporations where status = 0"
+                sql = "select id, code, code_krx, investing_comp_name, common_stocks from corporations where status = 0"
                 curs.execute(sql)
 
                 rs = curs.fetchall()

@@ -59,11 +59,11 @@ class Fnguide:
                           'liability=%s, ' \
                           'equity=%s, ' \
                           'cashflow_operating=%s ' \
-                          'where code=%s and yyyymm=%s and flag=%s'
+                          'where code=%s and ym=%s and flag=%s'
                     curs.execute(sql, (
                         revenue, gross_profit, operating_income, net_income, asset, liability, equity,
                         cashflow_operating,
-                        code, yyyymm, 'y'))
+                        code, ym, 'y'))
                     conn.commit()
         except Exception as e:
             print(e)
@@ -116,15 +116,15 @@ class Fnguide:
         if len(idx[1]) > 10:
             print(idx[1] + '======================================')
 
-        yyyymm = idx[1].replace('/', '')
-        yyyymm = yyyymm.replace('(E)', '')
-        yyyymm = yyyymm.replace('(P)', '')
-        print(idx[1], yyyymm)
+        ym = idx[1].replace('/', '')
+        ym = ym.replace('(E)', '')
+        ym = ym.replace('(P)', '')
+        print(idx[1], ym)
 
-        if len(yyyymm) != 6:
+        if len(ym) != 6:
             return
 
-        print(yyyymm, len(yyyymm))
+        print(ym, len(ym))
 
         # eps = column['주당순이익'] if data['주당순이익'] != '--' else None
         # eps_forcast = data['column'] if data['예측'] != '--' else None
@@ -134,21 +134,21 @@ class Fnguide:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id from financeinfos_fnguide where code=%s and flag=%s and yyyymm=%s limit 0, 1"
-                curs.execute(sql, (code, flag, yyyymm))
+                sql = "select id from financeinfos_fnguide where code=%s and flag=%s and ym=%s limit 0, 1"
+                curs.execute(sql, (code, flag, ym))
                 rs = curs.fetchone()
 
                 if rs == None:  # 값이 없을 경우 현재 값 입력
                     print('None')
-                    print(code, flag, yyyymm, revenue, operating_income, net_income,
+                    print(code, flag, ym, revenue, operating_income, net_income,
                           debt_ratio, reserve_ratio, roe, eps, per, bps, pbr)
                     sql = 'insert into financeinfos_fnguide ' \
-                          '(code, flag, yyyymm, revenue, operating_income, net_income, ' \
+                          '(code, flag, ym, revenue, operating_income, net_income, ' \
                           'net_income_in_controlling, net_income_non_controlling, controlling_shareholder, non_controlling_shareholder, ' \
                           'debt_ratio, reserve_ratio, roe, eps, per, bps, pbr) ' \
                           'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
                     curs.execute(sql,
-                                 (code, flag, yyyymm, revenue, operating_income, net_income,
+                                 (code, flag, ym, revenue, operating_income, net_income,
                                   net_income_in_controlling, net_income_non_controlling, controlling_shareholder,
                                   non_controlling_shareholder,
                                   debt_ratio, reserve_ratio, roe, eps, per, bps, pbr))
@@ -185,10 +185,10 @@ class Fnguide:
         finally:
             pass
 
-    def updateFinancialRatio(self, code, yyyymm, dataSet):
+    def updateFinancialRatio(self, code, ym, dataSet):
 
-        yyyymm = yyyymm.replace('/', '')
-        if yyyymm[-2:] == '12':
+        ym = ym.replace('/', '')
+        if ym[-2:] == '12':
             flag = 'y'
         else:
             flag = 'q'
@@ -201,12 +201,12 @@ class Fnguide:
         roa = dataSet['ROA'] if ~np.isnan(dataSet['ROA']) else None
         roic = dataSet['ROIC'] if ~np.isnan(dataSet['ROIC']) else None
 
-        print('update start', code, yyyymm, current_ratio, debt_ratio, operating_profit_margin, roa, roic)
+        print('update start', code, ym, current_ratio, debt_ratio, operating_profit_margin, roa, roic)
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select code from financeinfos_fnguide where code=%s and yyyymm=%s and flag=%s limit 0, 1"
-                curs.execute(sql, (code, yyyymm, flag))
+                sql = "select code from financeinfos_fnguide where code=%s and ym=%s and flag=%s limit 0, 1"
+                curs.execute(sql, (code, ym, flag))
                 # columns = curs.description
                 # print(columns)
 
@@ -216,10 +216,10 @@ class Fnguide:
                 if rs == None:  # 값이 없을 경우 현재 값 입력
                     print('None')
                     sql = 'insert into financeinfos_fnguide ' \
-                          '(code, flag, yyyymm, current_ratio, debt_ratio, operating_profit_margin, roa, roic) ' \
+                          '(code, flag, ym, current_ratio, debt_ratio, operating_profit_margin, roa, roic) ' \
                           'values(%s, %s, %s, %s, %s, %s, %s, %s)'
                     curs.execute(sql,
-                                 (code, flag, yyyymm, current_ratio, debt_ratio, operating_profit_margin, roa, roic))
+                                 (code, flag, ym, current_ratio, debt_ratio, operating_profit_margin, roa, roic))
 
                     conn.commit()
                 else:
@@ -230,9 +230,9 @@ class Fnguide:
                           'operating_profit_margin=%s, ' \
                           'roa=%s, ' \
                           'roic=%s ' \
-                          'where code=%s and yyyymm=%s and flag=%s'
+                          'where code=%s and ym=%s and flag=%s'
                     curs.execute(sql,
-                                 (current_ratio, debt_ratio, operating_profit_margin, roa, roic, code, yyyymm, flag))
+                                 (current_ratio, debt_ratio, operating_profit_margin, roa, roic, code, ym, flag))
                     conn.commit()
         except Exception as e:
             print(e)
@@ -243,7 +243,7 @@ class Fnguide:
             pass
 
     # srim 관련 데이타 가져오기
-    def getControllingShareholder(self, code, yyyymm):
+    def getControllingShareholder(self, code, ym):
         """
         지배주주지분 가져오기
         :return:
@@ -251,8 +251,8 @@ class Fnguide:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select controlling_shareholder from financeinfos_fnguide WHERE code = %s AND yyyymm = %s AND flag = %s"
-                curs.execute(sql, (code, yyyymm, 'y'))
+                sql = "select controlling_shareholder from financeinfos_fnguide WHERE code = %s AND ym = %s AND flag = %s"
+                curs.execute(sql, (code, ym, 'y'))
 
                 rs = curs.fetchone()
                 return rs
@@ -263,7 +263,7 @@ class Fnguide:
         # finally:
         #     pass
 
-    def get3yearRoe(self, code, yyyymm):
+    def get3yearRoe(self, code, ym):
         """
         3년간 roe가져오기
         :return:
@@ -271,8 +271,8 @@ class Fnguide:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select roe, yyyymm controlling_shareholder from financeinfos_fnguide WHERE code = %s AND flag = %s and yyyymm <= %s order by yyyymm desc limit 0, 3"
-                curs.execute(sql, (code, 'y', yyyymm))
+                sql = "select roe, ym controlling_shareholder from financeinfos_fnguide WHERE code = %s AND flag = %s and ym <= %s order by ym desc limit 0, 3"
+                curs.execute(sql, (code, 'y', ym))
 
                 rs = curs.fetchall()
                 return rs

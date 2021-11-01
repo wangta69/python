@@ -24,9 +24,9 @@ class Crawler():
         # time.sleep(1)
         self.weekly()
         # time.sleep(1)
-        # self.monthly()
+        self.monthly()
         # time.sleep(1)
-        # self.yearly()
+        self.yearly()
 
 
     def daily(self):
@@ -34,7 +34,7 @@ class Crawler():
         # self.naver.updateMarketPrice() # 현재가격 업데이트
         # # self.naver.updateMarketPrice('054040')
         # time.sleep(1)
-        self.fnguide.crawalSvdMain() # 발행주식수, 시가총액 | 증권사예측(EPS, PER) | ROA, EPS....
+        # self.fnguide.crawalSvdMain() # 발행주식수, 시가총액 | 증권사예측(EPS, PER) | ROA, EPS....
         # # self.fnguide.crawalSvdMain('023960')
         # time.sleep(1)
         # self.fnguide.crawlingConsensus() # 컨센서스 업데이트
@@ -49,8 +49,8 @@ class Crawler():
         # self.cal.movingAverage(60)  # 60일 이동평균선
         # time.sleep(1)
         # self.krx.get_market_trading_volume_by_date()  # 색터별 거래량
-        # self.krx.get_market_trading_volume_by_date('20210908', '20210909')  # 색터별 거래량
-
+        # # self.krx.get_market_trading_volume_by_date('20210908', '20210909')  # 색터별 거래량
+        self.krx.기간별_개별종목_공매도_종합정보()
 
     def weekly(self):
         print('weekly')
@@ -69,9 +69,9 @@ class Crawler():
 
     def yearly(self):
         print('yearly')
-        # self.fnguide.crawalFinance() # '매출액', '매출총이익', '영업이익', '당기순이익', '자산', '부채', '자본', '영업활동으로인한현금흐름'
+        self.fnguide.crawalFinance() # '매출액', '매출총이익', '영업이익', '당기순이익', '자산', '부채', '자본', '영업활동으로인한현금흐름'
         time.sleep(1)
-        self.cal.calSrim("202012")
+        # self.cal.calSrim("202012")
 
     def temporary(self):
         pass

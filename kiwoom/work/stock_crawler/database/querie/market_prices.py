@@ -13,7 +13,7 @@ class MarketPrices:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select yyyymmdd, open, high, low, close from market_prices where code = %s order by yyyymmdd desc limit 0, %s"
+                sql = "select ymd, open, high, low, close from market_prices where code = %s order by ymd desc limit 0, %s"
                 curs.execute(sql, (code, limit))
 
                 rs = curs.fetchall()
@@ -23,13 +23,31 @@ class MarketPrices:
             print(curs._last_executed)
             raise
 
-    def updateMarketPrices(self, code, yyyymm, close, open, high, low, trade_qty):
+    def price(self, code, ymd):
+        """
+        업체별 가격 리스트를 가져온다.
+        :return:
+        """
+        conn = self.parent.connect()
+        try:
+            with conn.cursor(pymysql.cursors.DictCursor) as curs:
+                sql = "select close, trade_qty from market_prices where code = %s and ymd = %s"
+                curs.execute(sql, (code, ymd))
+
+                rs = curs.fetchone()
+                return rs
+        except Exception as e:
+            print('I got a Exception  - reason "%s"' % str(e))
+            print(curs._last_executed)
+            raise
+
+    def updateMarketPrices(self, code, ymd, close, open, high, low, trade_qty):
 
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id from market_prices where code=%s and yyyymmdd=%s limit 0, 1"
-                curs.execute(sql, (code, yyyymm))
+                sql = "select id from market_prices where code=%s and ymd=%s limit 0, 1"
+                curs.execute(sql, (code, ymd))
                 # columns = curs.description
                 # print(columns)
 
@@ -40,10 +58,10 @@ class MarketPrices:
                 if rs == None:  # 값이 없을 경우 현재 값 입력
                     print('None')
                     sql = 'insert into market_prices ' \
-                          '(code, yyyymmdd, close, open, high, low, trade_qty) ' \
+                          '(code, ymd, close, open, high, low, trade_qty) ' \
                           'values(%s, %s, %s, %s, %s, %s, %s)'
                     curs.execute(sql, (
-                        code, yyyymm, close, open, high, low, trade_qty
+                        code, ymd, close, open, high, low, trade_qty
                     ))
 
                     conn.commit()
@@ -64,13 +82,13 @@ class MarketPrices:
         finally:
             pass
 
-    def updateStochastic(self, code, yyyymm, fast_k, slow_k, slow_d):
-        print('updateStochastic', code, yyyymm, fast_k, slow_k, slow_d)
+    def updateStochastic(self, code, ymd, fast_k, slow_k, slow_d):
+        print('updateStochastic', code, ymd, fast_k, slow_k, slow_d)
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select id from market_prices where code=%s and yyyymmdd=%s limit 0, 1"
-                curs.execute(sql, (code, yyyymm))
+                sql = "select id from market_prices where code=%s and ymd=%s limit 0, 1"
+                curs.execute(sql, (code, ymd))
                 # columns = curs.description
                 # print(columns)
 

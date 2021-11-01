@@ -27,7 +27,7 @@ class Calculate():
             data = []
             # 역순으로 넣어 둔다.
             for price in prices:
-                data.insert(0, [price['yyyymmdd'], price['close'], price['high'], price['low']])
+                data.insert(0, [price['ymd'], price['close'], price['high'], price['low']])
 
             df = pd.DataFrame(data)
             df.columns = ['Date', 'Close', 'High', 'Low']
@@ -61,7 +61,7 @@ class Calculate():
                 data = []
                 # 역순으로 넣어 둔다.
                 for price in prices:
-                    data.insert(0, [price['yyyymmdd'], price['close'], price['high'], price['low']])
+                    data.insert(0, [price['ymd'], price['close'], price['high'], price['low']])
 
                 df = pd.DataFrame(data)
                 df.columns = ['Date', 'Close', 'High', 'Low']
@@ -99,7 +99,7 @@ class Calculate():
             prices = self.mysql.prices(code, 120)
             closes = []
             for price in prices:
-                closes.insert(0, [price['yyyymmdd'], price['close']])
+                closes.insert(0, [price['ymd'], price['close']])
 
             df = pd.DataFrame(closes)
             df.columns = ['Date', 'Close']
@@ -113,7 +113,7 @@ class Calculate():
                 prices = self.mysql.prices(code, 120)
                 closes = []
                 for price in prices:
-                    closes.insert(0, [price['yyyymmdd'], price['close']])
+                    closes.insert(0, [price['ymd'], price['close']])
 
                 df = pd.DataFrame(closes)
                 df.columns = ['Date', 'Close']
@@ -127,7 +127,7 @@ class Calculate():
             closes = []
             # 역순으로 넣어 둔다.
             for price in prices:
-                closes.insert(0, [price['yyyymmdd'], price['close']])
+                closes.insert(0, [price['ymd'], price['close']])
 
             df = pd.DataFrame(closes)
             df.columns = ['Date', 'Close']
@@ -145,7 +145,7 @@ class Calculate():
                 prices = self.mysql.prices(code, day)
                 closes = []
                 for price in prices:
-                    closes.insert(0, [price['yyyymmdd'], price['close']])
+                    closes.insert(0, [price['ymd'], price['close']])
 
                 df = pd.DataFrame(closes)
                 df.columns = ['Date', 'Close']
@@ -157,9 +157,9 @@ class Calculate():
                 gap60 = (latest - avg) / latest * 100
                 self.mysql.updateMovingAverage(code, gap60)
 
-    def calSrim(self, yyyymm):
+    def calSrim(self, ym):
         srim = Srim()
-        srim.updateSrim(yyyymm)
+        srim.updateSrim(ym)
 
 
 
