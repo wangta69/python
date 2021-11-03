@@ -320,6 +320,39 @@ class Investing():
             return str(s)
 
 
+
+    def calendar(self):
+        import requests
+        from bs4 import BeautifulSoup
+
+        # url = "https://www.investing.com/economic-calendar/Service/getCalendarFilteredData"
+        url = 'https://kr.investing.com/earnings-calendar/Service/getCalendarFilteredData'
+        payload = {
+            "country[]": ["11"],
+            "dateFrom": "2021-11-01",
+            "dateTo": "2021-11-01",
+            # "timeZone": "8",
+            # "timeFilter": "timeRemain",
+            "currentTab": "custom",
+            "limit_from": "0"}
+
+        req = requests.post(url, data=payload, headers={
+            "User-Agent": "Mozilla/5.0",
+            "X-Requested-With": "XMLHttpRequest"
+        })
+        # soup = BeautifulSoup(req.json()['data'], "lxml")
+        soup = BeautifulSoup(req.json()['data'], "html.parser")
+        cnt = 0
+        for items in soup.select("tr"):
+            print(cnt)
+            if cnt == 0:
+                pass
+            else:
+                data = [item.get_text(strip=True) for item in items.select("th,td")]
+                code = re.findall('\(([^)]+)', data[1])
+                print(data[1])
+            cnt += 1
+
 if __name__ == "__main__":
     investing = Investing()
     # 월 1회
@@ -327,7 +360,8 @@ if __name__ == "__main__":
     # 주 1회
     # investing.earnings()
     # investing.earnings('004840')
-    investing.earnings('006400')
+    # investing.earnings('006400')
+    investing.calendar()
     # investing.test()
 
 

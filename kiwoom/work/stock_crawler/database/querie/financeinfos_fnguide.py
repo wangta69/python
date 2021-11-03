@@ -28,14 +28,14 @@ class Fnguide:
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:
-                sql = "select code from financeinfos_fnguide where code=%s and yyyymm=%s and flag=%s limit 0, 1"
+                sql = "select code from financeinfos_fnguide where code=%s and ym=%s and flag=%s limit 0, 1"
                 curs.execute(sql, (code, yyyymm, 'y'))
                 rs = curs.fetchone()
 
                 if rs == None:  # 값이 없을 경우 현재 값 입력
                     print('None')
                     sql = 'insert into financeinfos_fnguide ' \
-                          '(code, flag, yyyymm, revenue, gross_profit, operating_income, net_income, asset, liability, equity, cashflow_operating) ' \
+                          '(code, flag, ym, revenue, gross_profit, operating_income, net_income, asset, liability, equity, cashflow_operating) ' \
                           'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 
                     print(sql)

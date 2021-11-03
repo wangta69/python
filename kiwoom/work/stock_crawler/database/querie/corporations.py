@@ -76,6 +76,9 @@ class Corporatons:
         :param shares:
         :return: Null
         """
+        if shares == '':
+            shares = 0
+
         conn = self.parent.connect()
         try:
             with conn.cursor(pymysql.cursors.DictCursor) as curs:

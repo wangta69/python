@@ -19,16 +19,17 @@ class Crawler():
         self.cal = Calculate()
         self.fdr = Fdr()  # FinanceDataReader 를 사용 (가격업데이트 별도 버젼)
 
-
+        self.test()
         # self.daily()
         # time.sleep(1)
-        self.weekly()
-        # time.sleep(1)
-        self.monthly()
-        # time.sleep(1)
-        self.yearly()
+        # self.weekly()
+        # # time.sleep(1)
+        # self.monthly()
+        # # time.sleep(1)
+        # self.yearly()
 
-
+    def test(self):
+        self.fnguide.crawalFinancialRatio()
     def daily(self):
         print('daily')
         # self.naver.updateMarketPrice() # 현재가격 업데이트
