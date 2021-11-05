@@ -84,6 +84,8 @@ class Util:
                             self.mysql.updateTopVolumeSector(code, ymd, 'B', b_corp, b_qty)
                 except ValueError as e:
                     print('I got a ValueError - reason "%s"' % str(e))
+                except AttributeError as e:
+                    print('I got a AttributeError - reason "%s"' % str(e))
                 finally:
                     pass
 
@@ -148,7 +150,7 @@ class Util:
                 result[5].append(td[4].text.strip())  # 최고가
                 result[6].append(td[5].text.strip())  # 최저가
                 result[7].append(td[6].text.strip())  # 거래량
-        return result;
+        return result
 
         # for i in range(len(result[0])):
             # self.mysql.updateMarketPrices()
@@ -160,12 +162,12 @@ class Util:
     def get_market_prices(self, code, page_num=1):
         result = self.print_stock_price(code, page_num)
         for i in range(len(result[0])):
-            yyyymm = result[0][i].replace('.', '-') # 날짜
-            close = result[1][i].replace(',', '') # 종가 (현재가)
-            open = result[4][i].replace(',', '') # 시가
-            high = result[5][i].replace(',', '') # 고가
-            low = result[6][i].replace(',', '') # 저가
-            trade_qty = result[7][i].replace(',', '') # 거래량
+            yyyymm = result[0][i].replace('.', '-')  # 날짜
+            close = result[1][i].replace(',', '')  # 종가 (현재가)
+            open = result[4][i].replace(',', '')  # 시가
+            high = result[5][i].replace(',', '')  # 고가
+            low = result[6][i].replace(',', '')  # 저가
+            trade_qty = result[7][i].replace(',', '')# 거래량
             print(code, yyyymm, close, open, high, low, trade_qty)
             self.mysql.updateMarketPrices(code, yyyymm, close, open, high, low, trade_qty)
 
@@ -177,7 +179,7 @@ class Util:
         url = 'https://finance.naver.com' + surl
 
         soup = self.get_bs_obj(url)
-        tables = soup.find_all("table", attrs={'summary' : '업종별 시세 리스트'})
+        tables = soup.find_all("table", attrs={'summary': '업종별 시세 리스트'})
         for t in tables:
             links = t.find_all("a")
             for a in links:
@@ -220,7 +222,7 @@ class Util:
         url = 'https://finance.naver.com' + surl
 
         soup = self.get_bs_obj(url)
-        tables = soup.find_all("table", attrs={'summary' : '업종별 시세 리스트'})
+        tables = soup.find_all("table", attrs={'summary': '업종별 시세 리스트'})
         for t in tables:
             links = t.find_all("a")
             for a in links:
@@ -239,7 +241,7 @@ class Util:
         섹터매핑
         :return:
         """
-        pageurl = 'https://finance.naver.com/sise/theme.naver' # ?&page=2
+        pageurl = 'https://finance.naver.com/sise/theme.naver'  # ?&page=2
         soup = self.get_bs_obj(pageurl)
         pages = soup.find_all("table", attrs={'summary': '페이지 네비게이션 리스트'})
         for p in pages:
