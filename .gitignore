@@ -3,6 +3,8 @@
 /dart/fsdata
 /dart/conf.ini
 /dart/venv
+/chat-bot/kochat/saved
+/chat-bot/TensorFlow-Tutorials-master
 *__pycache__
 # IDEs and editors
 *.idea
